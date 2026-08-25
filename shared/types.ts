@@ -6,6 +6,8 @@ export interface Movie {
   rating: number;
   matchPct?: number;
   img: string;
+  backdropImg?: string;
+  overview?: string;
   tags?: string[];
 }
 
@@ -20,6 +22,7 @@ export type RoomStatus = "waiting" | "started" | "matched" | "closed";
 export interface Room {
   id: string;
   name: string;
+  genre?: string;
   hostId: string;
   participants: Participant[];
   movies: Movie[];
@@ -33,6 +36,7 @@ export interface Room {
 export interface CreateRoomRequest {
   name?: string;
   hostName?: string;
+  genre?: string;
 }
 
 export interface CreateRoomResponse {

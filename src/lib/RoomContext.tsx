@@ -13,7 +13,7 @@ interface RoomState {
 }
 
 interface RoomContextValue extends RoomState {
-  createRoom: (name: string, roomName?: string) => Promise<void>;
+  createRoom: (name: string, roomName?: string, genre?: string) => Promise<void>;
   joinRoom: (roomId: string, name: string) => Promise<void>;
   startRoom: () => Promise<void>;
   swipe: (movieId: string | number, direction: "like" | "skip") => void;
@@ -34,11 +34,11 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  const createRoom = useCallback(async (name: string, roomName?: string) => {
+  const createRoom = useCallback(async (name: string, roomName?: string, genre?: string) => {
     setIsCreating(true);
     setError(null);
     try {
-      const { room: newRoom } = await createRoomApi({ name: roomName, hostName: name });
+      const { room: newRoom } = await createRoomApi({ name: roomName, hostName: name, genre });
       setRoom(newRoom);
       setParticipantId(newRoom.hostId);
       setParticipantName(name || "Host");

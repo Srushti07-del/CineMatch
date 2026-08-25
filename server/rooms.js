@@ -16,17 +16,18 @@ export class RoomStore {
     }, 60 * 1000);
   }
 
-  createRoom({ name, hostName }) {
+  createRoom({ name, hostName, genre, movies }) {
     const hostId = this._genId();
     const roomId = this._genShortId();
     const room = {
       id: roomId,
       name: name || `Movie Night ${roomId.slice(0, 5)}`,
+      genre: genre || "Trending",
       hostId,
       participants: [
         { id: hostId, name: hostName || "Host", joinedAt: new Date().toISOString() },
       ],
-      movies: SWIPE_MOVIES,
+      movies: movies && movies.length > 0 ? movies : SWIPE_MOVIES,
       currentMovieIndex: 0,
       matches: [],
       status: "waiting",

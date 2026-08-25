@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { RoomStore } from "./rooms.js";
+import { getRoomMovies } from "./tmdb.js";
 
 const PORT = process.env.PORT || 4000;
 const ORIGIN = process.env.ORIGIN || "http://localhost:5173";
@@ -15,9 +16,10 @@ const store = new RoomStore();
 
 // ── REST API ──────────────────────────────────────────────
 
-app.post("/api/rooms", (req, res) => {
-  const { name, hostName } = req.body || {};
-  const room = store.createRoom({ name, hostName });
+app.post("/api/rooms", async (req, res) => {
+  const { name, hostName, genre } = req.body || {};
+  const movies = await getRoomMovies(genre);
+  const room = store.createRoom({ name, hostName, genre, movies });
   return res.status(201).json({ room });
 });
 

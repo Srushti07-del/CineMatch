@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, X, ChevronRight, Star, Film, Play, Sparkles, Check, Users } from "lucide-react";
+import { Heart, X, ChevronRight, Star, Film, Play, Sparkles, Check, Users, Loader2 } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 import { RoomCreationDialog } from "@/app/components/RoomCreationDialog";
 import { RoomScreen } from "@/app/components/RoomScreen";
+import { fetchTrendingMovies, fetchMoviesByGenre } from "@/lib/tmdb";
+import type { Movie } from "../../shared/types";
 
 // ─────────────────────────────────────────────
 // DATA
@@ -217,6 +219,16 @@ function Navbar({ scrolled, onStartMatching }: { scrolled: boolean; onStartMatch
 // ─────────────────────────────────────────────
 
 function PosterStack({ mx, my }: { mx: number; my: number }) {
+  const [posters, setPosters] = useState<{ img: string; title: string; genre: string }[]>(HERO_POSTERS);
+
+  useEffect(() => {
+    fetchTrendingMovies("week").then((movies) => {
+      if (movies && movies.length >= 5) {
+        setPosters(movies.slice(0, 5).map((m) => ({ img: m.img, title: m.title, genre: m.genre })));
+      }
+    });
+  }, []);
+
   const NOTIFS = [
     { text: "❤️ You liked this",    top: "6%",  right: "-8%",  left: undefined, bottom: undefined, anim: "float-a 3s ease-in-out infinite",       bg: "rgba(236,72,153,0.14)",  border: "rgba(236,72,153,0.35)" },
     { text: "👥 4 friends matching", top: "38%", right: undefined, left: "-18%", bottom: undefined, anim: "float-b 3.5s ease-in-out infinite 0.4s", bg: "rgba(139,92,246,0.14)", border: "rgba(139,92,246,0.35)" },
@@ -230,8 +242,8 @@ function PosterStack({ mx, my }: { mx: number; my: number }) {
 
       {/* Poster group with parallax */}
       <div style={{ position: "relative", width: "100%", height: "100%", transform: `perspective(1100px) rotateY(${mx * -4}deg) rotateX(${my * 2.5}deg)`, transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
-        {HERO_POSTERS.map((p, i) => {
-          const c = POSTER_CONFIGS[i];
+        {posters.map((p, i) => {
+          const c = POSTER_CONFIGS[i] || POSTER_CONFIGS[0];
           return (
             <div
               key={i}
@@ -410,7 +422,7 @@ function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
 // SWIPE DEMO
 // ─────────────────────────────────────────────
 
-function MatchCelebration({ movie, onReset }: { movie: typeof SWIPE_MOVIES[0]; onReset: () => void }) {
+function MatchCelebration({ movie, onReset }: { movie: Movie | (typeof SWIPE_MOVIES)[0]; onReset: () => void }) {
   const particles = Array.from({ length: 28 }, (_, i) => ({
     id: i,
     x: 10 + (i / 28) * 80,
@@ -465,10 +477,19 @@ function MatchCelebration({ movie, onReset }: { movie: typeof SWIPE_MOVIES[0]; o
 }
 
 function SwipeDemo() {
+  const [demoMovies, setDemoMovies] = useState<Movie[]>(SWIPE_MOVIES);
   const [idx, setIdx] = useState(0);
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
+
+  useEffect(() => {
+    fetchTrendingMovies("week").then((movies) => {
+      if (movies && movies.length >= 5) {
+        setDemoMovies(movies.slice(0, 8));
+      }
+    });
+  }, []);
 
   const swipe = (d: "left" | "right") => {
     if (dir || matched) return;
@@ -476,7 +497,7 @@ function SwipeDemo() {
     setHintVisible(false);
     setTimeout(() => {
       const next = idx + 1;
-      if (next >= SWIPE_MOVIES.length) {
+      if (next >= demoMovies.length) {
         setMatched(true);
       } else {
         setIdx(next);
@@ -487,7 +508,7 @@ function SwipeDemo() {
 
   const reset = () => { setIdx(0); setDir(null); setMatched(false); setHintVisible(true); };
 
-  const movie = SWIPE_MOVIES[Math.min(idx, SWIPE_MOVIES.length - 1)];
+  const movie = demoMovies[Math.min(idx, demoMovies.length - 1)];
 
   return (
     <section style={{ padding: "128px 0", background: "#06060A", position: "relative" }}>
@@ -507,7 +528,7 @@ function SwipeDemo() {
             <>
               {/* Progress dots */}
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                {SWIPE_MOVIES.map((_, i) => (
+                {demoMovies.map((_, i) => (
                   <div key={i} style={{ height: 4, borderRadius: 2, transition: "all 0.4s ease", width: i === idx ? 24 : 8, background: i < idx ? "#8B5CF6" : i === idx ? "#EC4899" : "rgba(255,255,255,0.14)" }} />
                 ))}
               </div>
@@ -515,7 +536,7 @@ function SwipeDemo() {
               {/* Card stack */}
               <div style={{ position: "relative", width: 320, height: 460 }}>
                 {/* Shadow card behind */}
-                {idx < SWIPE_MOVIES.length - 1 && (
+                {idx < demoMovies.length - 1 && (
                   <div style={{ position: "absolute", inset: 0, top: 14, left: 12, right: 12, borderRadius: 28, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", transform: "scale(0.95) translateY(8px)", zIndex: 0 }} />
                 )}
 
@@ -532,7 +553,7 @@ function SwipeDemo() {
 
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 28px" }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                      {movie.tags.map(t => (
+                      {movie.tags?.map(t => (
                         <span key={t} style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
                       ))}
                     </div>
@@ -569,7 +590,7 @@ function SwipeDemo() {
                   onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.09)"; e.currentTarget.style.transform = "scale(1)"; }}>
                   <X size={24} />
                 </button>
-                <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.28)", width: 60, textAlign: "center", margin: 0 }}>{idx + 1} / {SWIPE_MOVIES.length}</p>
+                <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.28)", width: 60, textAlign: "center", margin: 0 }}>{idx + 1} / {demoMovies.length}</p>
                 <button onClick={() => swipe("right")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(236,72,153,0.35)", background: "rgba(236,72,153,0.1)", color: "#EC4899", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "0 0 20px rgba(236,72,153,0.2)" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "rgba(236,72,153,0.2)"; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(236,72,153,0.4)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "rgba(236,72,153,0.1)"; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(236,72,153,0.2)"; }}>
@@ -715,8 +736,9 @@ function Friends() {
 // MOVIE CAROUSEL
 // ─────────────────────────────────────────────
 
-function CarouselCard({ movie }: { movie: typeof CAROUSEL_MOVIES[0] }) {
+function CarouselCard({ movie }: { movie: Movie | (typeof CAROUSEL_MOVIES)[0] }) {
   const [hov, setHov] = useState(false);
+  const tag = (movie as any).category || (movie as Movie).tags?.[0] || "Featured";
   return (
     <div
       style={{ position: "relative", flexShrink: 0, width: 175, height: 255, borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "#1a0a2e", transform: hov ? "translateY(-14px) scale(1.05)" : "translateY(0) scale(1)", transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease", boxShadow: hov ? "0 36px 64px rgba(0,0,0,0.72), 0 0 48px rgba(124,58,237,0.38)" : "0 8px 32px rgba(0,0,0,0.4)" }}
@@ -734,7 +756,7 @@ function CarouselCard({ movie }: { movie: typeof CAROUSEL_MOVIES[0] }) {
         </div>
       </div>
       {hov && (
-        <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 8px", borderRadius: 50, background: "rgba(124,58,237,0.45)", border: "1px solid rgba(124,58,237,0.6)", color: "#C4B5FD", fontSize: 9, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{movie.category}</div>
+        <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 8px", borderRadius: 50, background: "rgba(124,58,237,0.45)", border: "1px solid rgba(124,58,237,0.6)", color: "#C4B5FD", fontSize: 9, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{tag}</div>
       )}
     </div>
   );
@@ -742,7 +764,26 @@ function CarouselCard({ movie }: { movie: typeof CAROUSEL_MOVIES[0] }) {
 
 function Carousel() {
   const [cat, setCat] = useState("All");
-  const filtered = cat === "All" ? CAROUSEL_MOVIES : CAROUSEL_MOVIES.filter(m => m.category === cat);
+  const [movies, setMovies] = useState<(Movie | (typeof CAROUSEL_MOVIES)[0])[]>(CAROUSEL_MOVIES);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isCurrent = true;
+    setLoading(true);
+    fetchMoviesByGenre(cat)
+      .then((res) => {
+        if (isCurrent && res && res.length > 0) {
+          setMovies(res);
+        }
+        if (isCurrent) setLoading(false);
+      })
+      .catch(() => {
+        if (isCurrent) setLoading(false);
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, [cat]);
 
   return (
     <section style={{ padding: "128px 0", background: "#06060A", position: "relative", overflow: "hidden" }}>
@@ -766,8 +807,8 @@ function Carousel() {
       </div>
 
       {/* Scroll */}
-      <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, scrollbarWidth: "none", WebkitOverflowScrolling: "touch", paddingLeft: `max(24px, calc((100vw - 1280px) / 2 + 24px))`, paddingRight: 24 }}>
-        {(filtered.length ? filtered : CAROUSEL_MOVIES).map((m, i) => <CarouselCard key={`${m.title}-${i}`} movie={m} />)}
+      <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, scrollbarWidth: "none", WebkitOverflowScrolling: "touch", paddingLeft: `max(24px, calc((100vw - 1280px) / 2 + 24px))`, paddingRight: 24, opacity: loading ? 0.6 : 1, transition: "opacity 0.25s ease" }}>
+        {(movies.length ? movies : CAROUSEL_MOVIES).map((m, i) => <CarouselCard key={`${m.title}-${i}`} movie={m} />)}
       </div>
     </section>
   );

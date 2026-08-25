@@ -7,8 +7,11 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
   const [step, setStep] = useState<"form" | "room">(preloadedRoomId ? "join" : "form");
   const [name, setName] = useState("");
   const [roomName, setRoomName] = useState("");
+  const [genre, setGenre] = useState("Trending");
   const [copied, setCopied] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const GENRES = ["Trending", "Action", "Sci-Fi", "Comedy", "Horror", "Romance", "Drama", "Animation"];
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -22,7 +25,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
 
   const handleCreate = async () => {
     if (!name.trim()) return;
-    await createRoom(name.trim(), roomName.trim() || undefined);
+    await createRoom(name.trim(), roomName.trim() || undefined, genre);
   };
 
   const handleJoin = async () => {
@@ -63,7 +66,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
         background: "linear-gradient(180deg, #0a0a0e, #06060A)",
         borderRadius: 24, border: "1px solid rgba(244,63,94,0.32)",
         boxShadow: "0 0 56px rgba(244,63,94,0.45), 0 32px 64px rgba(0,0,0,0.6)",
-        padding: 36, maxWidth: 420, width: "90%",
+        padding: 36, maxWidth: 440, width: "92%",
       }}>
         <button
           onClick={onClose}
@@ -88,9 +91,9 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
             </h2>
             <p style={{
               fontFamily: "Inter,sans-serif", fontSize: 14,
-              color: "rgba(240,239,250,0.45)", margin: "0 0 24px"
+              color: "rgba(240,239,250,0.45)", margin: "0 0 20px"
             }}>
-              Enter your name and optionally a room name. Share the link to invite friends.
+              Choose a vibe, name your room, and invite your crew to swipe in real-time.
             </p>
 
             {error && (
@@ -124,6 +127,45 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
                   onKeyDown={e => e.key === "Enter" && handleCreate()}
                 />
               </div>
+
+              <div>
+                <label style={{
+                  fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
+                  color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
+                }}>Movie Genre / Mood</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {GENRES.map((g) => {
+                    const isSelected = genre === g;
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setGenre(g)}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 20,
+                          fontSize: 12,
+                          fontWeight: isSelected ? 700 : 500,
+                          fontFamily: "Inter,sans-serif",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          border: isSelected
+                            ? "1px solid #f43f5e"
+                            : "1px solid rgba(255,255,255,0.08)",
+                          background: isSelected
+                            ? "linear-gradient(135deg, rgba(225,29,72,0.35), rgba(244,63,94,0.25))"
+                            : "rgba(255,255,255,0.03)",
+                          color: isSelected ? "#fff" : "rgba(240,239,250,0.6)",
+                          boxShadow: isSelected ? "0 0 16px rgba(244,63,94,0.3)" : "none",
+                        }}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <label style={{
                   fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
