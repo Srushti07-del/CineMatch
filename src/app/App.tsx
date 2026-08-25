@@ -632,7 +632,7 @@ function Friends() {
 
           {/* Text */}
           <div>
-            <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(139,92,246,0.7)", marginBottom: 20 }}>Social Matching</p>
+            <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(239,68,68,0.7)", marginBottom: 20 }}>Social Matching</p>
             <h2 className="reveal d1" style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: "clamp(32px,4vw,52px)", lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 24px" }}>
               Your taste.{" "}
               <span className="grad-vp">Their taste.</span>
@@ -799,7 +799,7 @@ function Carousel() {
         </div>
         <div className="reveal d2" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {MOOD_CATEGORIES.map(c => (
-            <button key={c} onClick={() => setCat(c)} style={{ padding: "8px 16px", borderRadius: 50, border: `1px solid ${cat === c ? "transparent" : "rgba(255,255,255,0.08)"}`, background: cat === c ? "linear-gradient(135deg,#7C3AED,#EC4899)" : "rgba(255,255,255,0.04)", color: cat === c ? "white" : "rgba(240,239,250,0.5)", fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.3s", boxShadow: cat === c ? "0 0 20px rgba(124,58,237,0.35)" : "none" }}>
+            <button key={c} onClick={() => setCat(c)} style={{ padding: "8px 16px", borderRadius: 50, border: `1px solid ${cat === c ? "transparent" : "rgba(255,255,255,0.08)"}`, background: cat === c ? "linear-gradient(135deg,#e11d48,#f43f5e)" : "rgba(255,255,255,0.04)", color: cat === c ? "white" : "rgba(240,239,250,0.5)", fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.3s", boxShadow: cat === c ? "0 0 20px rgba(239,68,68,0.35)" : "none" }}>
               {c}
             </button>
           ))}
@@ -895,7 +895,7 @@ function CTA({ onStartMatching, onSeeHowItWorks }: { onStartMatching: () => void
       <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 65% 65% at 50% 50%, rgba(124,58,237,0.28) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 840, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-        <div className="reveal" style={{ display: "inline-block", padding: "8px 20px", borderRadius: 50, background: "rgba(124,58,237,0.14)", border: "1px solid rgba(124,58,237,0.32)", color: "#A78BFA", fontSize: 13, fontWeight: 700, fontFamily: "Inter,sans-serif", marginBottom: 32 }}>
+        <div className="reveal" style={{ display: "inline-block", padding: "8px 20px", borderRadius: 50, background: "rgba(239,68,68,0.14)", border: "1px solid rgba(239,68,68,0.32)", color: "#EF4444", fontSize: 13, fontWeight: 700, fontFamily: "Inter,sans-serif", marginBottom: 32, boxShadow: "0 0 20px rgba(239,68,68,0.5)" }}>
           🎬 Free to start — no credit card needed
         </div>
 
