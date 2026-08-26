@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { X, ChevronRight, Copy, Check, Link } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 
-export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () => void; preloadedRoomId?: string }) {
+export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean }) {
   const { createRoom, joinRoom, isCreating, error, room, dismissError } = useRoom();
-  const [step, setStep] = useState<"form" | "room">(preloadedRoomId ? "join" : "form");
+  const [step, setStep] = useState<"form" | "room">(preloadedRoomId || joinMode ? "join" : "form");
   const [name, setName] = useState("");
   const [roomName, setRoomName] = useState("");
   const [genre, setGenre] = useState("Trending");
+  const [roomCode, setRoomCode] = useState(preloadedRoomId || "");
   const [copied, setCopied] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,8 +30,8 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
   };
 
   const handleJoin = async () => {
-    if (!name.trim() || !preloadedRoomId) return;
-    await joinRoom(preloadedRoomId, name.trim());
+    if (!name.trim() || !roomCode.trim()) return;
+    await joinRoom(roomCode.trim(), name.trim());
   };
 
   const handleCopyLink = () => {
@@ -228,7 +229,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
               fontFamily: "Inter,sans-serif", fontSize: 14,
               color: "rgba(240,239,250,0.45)", margin: "0 0 24px"
             }}>
-              Enter your name to join room <span style={{ color: "#F59E0B" }}>{preloadedRoomId}</span>.
+              Enter the room code or invite link shared with you.
             </p>
 
             {error && (
@@ -243,6 +244,28 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
             )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+              <div>
+                <label style={{
+                  fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
+                  color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
+                }}>Room Code or Invite Link</label>
+                <input
+                  type="text"
+                  placeholder="e.g. a1b2c3d4 or https://...?room=a1b2c3d4"
+                  value={roomCode}
+                  onChange={e => {
+                    const raw = e.target.value.trim();
+                    const match = raw.match(/[?&]room=([^&\s]+)/);
+                    setRoomCode(match ? match[1] : raw);
+                  }}
+                  style={{
+                    width: "100%", padding: "12px 16px", borderRadius: 12,
+                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                    color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, outline: "none",
+                  }}
+                  onKeyDown={e => e.key === "Enter" && handleJoin()}
+                />
+              </div>
               <div>
                 <label style={{
                   fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
@@ -266,30 +289,44 @@ export function RoomCreationDialog({ onClose, preloadedRoomId }: { onClose: () =
 
             <button
               onClick={handleJoin}
-              disabled={isCreating || !name.trim()}
+              disabled={isCreating || !name.trim() || !roomCode.trim()}
               style={{
                 width: "100%", padding: "14px 20px", borderRadius: 50, border: "none",
-                background: !name.trim()
+                background: !name.trim() || !roomCode.trim()
                   ? "rgba(244,63,94,0.35)"
                   : "linear-gradient(135deg,#7C3AED,#EC4899)",
                 color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
-                cursor: !name.trim() ? "default" : "pointer",
+                cursor: !name.trim() || !roomCode.trim() ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: !name.trim() ? "none" : "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: !name.trim() || !roomCode.trim() ? "none" : "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)",
               }}
               onMouseEnter={e => {
-                if (!name.trim() || isCreating) return;
+                if (!name.trim() || !roomCode.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
                 e.currentTarget.style.boxShadow = "0 0 48px rgba(124,58,237,0.6), 0 12px 36px rgba(0,0,0,0.4)";
               }}
               onMouseLeave={e => {
-                if (!name.trim() || isCreating) return;
+                if (!name.trim() || !roomCode.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
                 e.currentTarget.style.boxShadow = "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)";
               }}
             >
               {isCreating ? "Joining..." : "Join Room"} <ChevronRight size={16} />
+            </button>
+
+            <button
+              onClick={() => setStep("form")}
+              style={{
+                width: "100%", padding: "10px 16px", borderRadius: 12, border: "none",
+                background: "transparent", color: "rgba(240,239,250,0.5)",
+                fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                marginTop: 12, transition: "color 0.2s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#F0EFFA")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}
+            >
+              ← Want to host instead? Create a room
             </button>
           </>
         )}

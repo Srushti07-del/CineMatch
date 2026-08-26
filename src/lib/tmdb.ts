@@ -205,3 +205,20 @@ export async function fetchMoviesByGenre(genreName: string, page = 1): Promise<M
     return FALLBACK_MOVIES;
   }
 }
+
+export async function searchMovies(query: string, page = 1): Promise<Movie[]> {
+  const q = query.trim();
+  if (!q) return [];
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&page=${page}&include_adult=false`);
+    if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.results || !data.results.length) return [];
+    return (data.results as RawTmdbMovie[])
+      .filter((m) => m.poster_path)
+      .map((m, idx) => transformTmdbMovie(m, idx));
+  } catch (err) {
+    console.warn("[TMDB] searchMovies failed:", err);
+    return [];
+  }
+}
