@@ -65,8 +65,8 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
     >
       <div style={{
         background: "linear-gradient(180deg, #0a0a0e, #06060A)",
-        borderRadius: 24, border: "1px solid rgba(244,63,94,0.32)",
-        boxShadow: "0 0 56px rgba(244,63,94,0.45), 0 32px 64px rgba(0,0,0,0.6)",
+        borderRadius: 24, border: "1px solid rgba(229,9,20,0.32)",
+        boxShadow: "0 0 56px rgba(229,9,20,0.45), 0 32px 64px rgba(0,0,0,0.6)",
         padding: 36, maxWidth: 440, width: "92%",
       }}>
         <button
@@ -100,7 +100,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
             {error && (
               <div style={{
                 padding: "10px 14px", borderRadius: 10,
-                background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)",
+                background: "rgba(229,9,20,0.12)", border: "1px solid rgba(229,9,20,0.35)",
                 color: "#FCA5A5", fontSize: 13, fontFamily: "Inter,sans-serif",
                 marginBottom: 16,
               }}>
@@ -151,13 +151,13 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           border: isSelected
-                            ? "1px solid #f43f5e"
+                            ? "1px solid #E50914"
                             : "1px solid rgba(255,255,255,0.08)",
                           background: isSelected
-                            ? "linear-gradient(135deg, rgba(225,29,72,0.35), rgba(244,63,94,0.25))"
+                            ? "linear-gradient(135deg, rgba(178,7,16,0.35), rgba(229,9,20,0.25))"
                             : "rgba(255,255,255,0.03)",
                           color: isSelected ? "#fff" : "rgba(240,239,250,0.6)",
-                          boxShadow: isSelected ? "0 0 16px rgba(244,63,94,0.3)" : "none",
+                          boxShadow: isSelected ? "0 0 16px rgba(229,9,20,0.3)" : "none",
                         }}
                       >
                         {g}
@@ -193,23 +193,23 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
               style={{
                 width: "100%", padding: "14px 20px", borderRadius: 50, border: "none",
                 background: !name.trim()
-                  ? "rgba(244,63,94,0.35)"
-                  : "linear-gradient(135deg,#e11d48,#f43f5e)",
+                  ? "rgba(229,9,20,0.35)"
+                  : "linear-gradient(135deg,#B20710,#E50914)",
                 color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
                 cursor: !name.trim() ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: !name.trim() ? "none" : "0 0 32px rgba(244,63,94,0.45), 0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: !name.trim() ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)",
               }}
               onMouseEnter={e => {
                 if (!name.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 0 48px rgba(244,63,94,0.6), 0 12px 36px rgba(0,0,0,0.4)";
+                e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.6), 0 12px 36px rgba(0,0,0,0.4)";
               }}
               onMouseLeave={e => {
                 if (!name.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = "0 0 32px rgba(244,63,94,0.45), 0 8px 24px rgba(0,0,0,0.3)";
+                e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)";
               }}
             >
               {isCreating ? "Creating..." : "Create Room"} <ChevronRight size={16} />
@@ -235,7 +235,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
             {error && (
               <div style={{
                 padding: "10px 14px", borderRadius: 10,
-                background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)",
+                background: "rgba(229,9,20,0.12)", border: "1px solid rgba(229,9,20,0.35)",
                 color: "#FCA5A5", fontSize: 13, fontFamily: "Inter,sans-serif",
                 marginBottom: 16,
               }}>
@@ -293,23 +293,23 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
               style={{
                 width: "100%", padding: "14px 20px", borderRadius: 50, border: "none",
                 background: !name.trim() || !roomCode.trim()
-                  ? "rgba(244,63,94,0.35)"
-                  : "linear-gradient(135deg,#7C3AED,#EC4899)",
+                  ? "rgba(229,9,20,0.35)"
+                  : "linear-gradient(135deg,#B20710,#E50914)",
                 color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
                 cursor: !name.trim() || !roomCode.trim() ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: !name.trim() || !roomCode.trim() ? "none" : "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: !name.trim() || !roomCode.trim() ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)",
               }}
               onMouseEnter={e => {
                 if (!name.trim() || !roomCode.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 0 48px rgba(124,58,237,0.6), 0 12px 36px rgba(0,0,0,0.4)";
+                e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.6), 0 12px 36px rgba(0,0,0,0.4)";
               }}
               onMouseLeave={e => {
                 if (!name.trim() || !roomCode.trim() || isCreating) return;
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)";
+                e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)";
               }}
             >
               {isCreating ? "Joining..." : "Join Room"} <ChevronRight size={16} />
@@ -336,7 +336,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
             <div style={{ textAlign: "center", marginBottom: 8 }}>
               <div style={{
                 width: 64, height: 64, borderRadius: "50%",
-                background: "linear-gradient(135deg,#e11d48,#f43f5e)",
+                background: "linear-gradient(135deg,#B20710,#E50914)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 margin: "0 auto 16px", fontSize: 28,
               }}>
@@ -358,13 +358,13 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
 
             <div style={{
               padding: "16px 16px 12px", borderRadius: 14,
-              background: "rgba(124,58,237,0.07)", border: "1px solid rgba(124,58,237,0.25)",
+              background: "rgba(229,9,20,0.07)", border: "1px solid rgba(229,9,20,0.25)",
               marginBottom: 20,
             }}>
               <div style={{
                 display: "flex", alignItems: "center", gap: 8, marginBottom: 8
               }}>
-                <Link size={13} color="#A78BFA" />
+                <Link size={13} color="#E50914" />
                 <span style={{
                   fontFamily: "Inter,sans-serif", fontSize: 11, fontWeight: 700,
                   color: "rgba(240,239,250,0.32)", textTransform: "uppercase", letterSpacing: "0.04em"
@@ -429,20 +429,20 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
               onClick={handleStartSwiping}
               style={{
                 width: "100%", padding: "13px 20px", borderRadius: 50, border: "none",
-                background: "linear-gradient(135deg,#7C3AED,#EC4899)",
+                background: "linear-gradient(135deg,#B20710,#E50914)",
                 color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
                 cursor: "pointer", display: "flex", alignItems: "center",
                 justifyContent: "center", gap: 8,
-                boxShadow: "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)",
                 transition: "transform 0.2s, box-shadow 0.2s"
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 0 48px rgba(124,58,237,0.6), 0 12px 36px rgba(0,0,0,0.4)";
+                e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.6), 0 12px 36px rgba(0,0,0,0.4)";
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = "0 0 32px rgba(124,58,237,0.45), 0 8px 24px rgba(0,0,0,0.3)";
+                e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)";
               }}
             >
               Start Swiping <ChevronRight size={16} />

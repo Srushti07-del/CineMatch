@@ -35,11 +35,11 @@ const SWIPE_MOVIES = [
 ];
 
 const FRIENDS = [
-  { name: "Alex",   color: "#8B5CF6", angle: -75 },
-  { name: "Jordan", color: "#EC4899", angle: -15 },
+  { name: "Alex",   color: "#E50914", angle: -75 },
+  { name: "Jordan", color: "#E50914", angle: -15 },
   { name: "Sam",    color: "#3B82F6", angle:  45 },
   { name: "Riley",  color: "#F97316", angle: 105 },
-  { name: "Casey",  color: "#EF4444", angle: 165 },
+  { name: "Casey",  color: "#E50914", angle: 165 },
   { name: "Morgan", color: "#EAB308", angle: 225 },
 ];
 
@@ -73,8 +73,8 @@ const STYLES = `
     100% { transform: translateY(-160px) scale(0); opacity: 0; }
   }
   @keyframes pulse-ring {
-    0%   { box-shadow: 0 0 0 0   rgba(124,58,237,0.6); }
-    100% { box-shadow: 0 0 0 20px rgba(124,58,237,0);   }
+    0%   { box-shadow: 0 0 0 0   rgba(229,9,20,0.6); }
+    100% { box-shadow: 0 0 0 20px rgba(229,9,20,0);   }
   }
   @keyframes dot-travel {
     0%   { offset-distance: 0%;   opacity: 0; }
@@ -106,7 +106,7 @@ const STYLES = `
 
   .hiw-flow { display: flex; align-items: stretch; }
   .hiw-card { flex: 1 1 0; min-width: 0; }
-  .hiw-arrow { flex: 0 0 64px; display: flex; align-items: center; justify-content: center; color: #EF4444; }
+  .hiw-arrow { flex: 0 0 64px; display: flex; align-items: center; justify-content: center; color: #E50914; }
   @media (max-width: 880px) {
     .hiw-flow { flex-direction: column; align-items: stretch; }
     .hiw-arrow { flex: 0 0 52px; transform: rotate(90deg); }
@@ -128,13 +128,13 @@ const STYLES = `
   .d5 { transition-delay: 0.55s; }
 
   .grad-vp {
-    background: linear-gradient(135deg, #ffe2e2 0%, #f43f5e 38%, #7f0d1a 100%);
+    background: linear-gradient(135deg, #ffe5e5 0%, #E50914 38%, #B20710 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .grad-bv {
-    background: linear-gradient(135deg, #fecdd3 0%, #e11d48 100%);
+    background: linear-gradient(135deg, #f7b6ba 0%, #B20710 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -179,12 +179,12 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrol
       background: scrolled ? "rgba(8,8,9,0.9)" : "transparent",
       backdropFilter: scrolled ? "blur(24px)" : "none",
       WebkitBackdropFilter: scrolled ? "blur(24px)" : "none",
-      borderBottom: scrolled ? "1px solid rgba(239,68,68,0.12)" : "1px solid transparent",
+      borderBottom: scrolled ? "1px solid rgba(229,9,20,0.12)" : "1px solid transparent",
     }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#e11d48,#f43f5e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 16px rgba(244,63,94,0.45)" }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#B20710,#E50914)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 16px rgba(229,9,20,0.45)" }}>
             <Film size={15} color="white" />
           </div>
           <span style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 18, letterSpacing: "-0.02em" }}>
@@ -210,7 +210,7 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrol
             onClick={onOpenSearch}
             aria-label="Search movies"
             style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(240,239,250,0.7)", cursor: "pointer", transition: "background 0.2s, border-color 0.2s, color 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(244,63,94,0.4)"; e.currentTarget.style.color = "#F0EFFA"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(229,9,20,0.4)"; e.currentTarget.style.color = "#F0EFFA"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,239,250,0.7)"; }}
           >
             <Search size={17} />
@@ -218,15 +218,15 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrol
           <button
             onClick={onJoinRoom}
             style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 50, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "rgba(240,239,250,0.78)", fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "background 0.2s, border-color 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(244,63,94,0.4)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(229,9,20,0.4)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
           >
             Join
           </button>
           <button
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#b91c1c,#ef4444)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 0 16px rgba(239,68,68,0.18), 0 8px 24px rgba(0,0,0,0.2)", transition: "transform 0.25s, box-shadow 0.25s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(239,68,68,0.25), 0 10px 26px rgba(0,0,0,0.22)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(239,68,68,0.18), 0 8px 24px rgba(0,0,0,0.2)"; }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#B20710,#E50914)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "0 0 16px rgba(229,9,20,0.18), 0 8px 24px rgba(0,0,0,0.2)", transition: "transform 0.25s, box-shadow 0.25s" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px) scale(1.02)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(229,9,20,0.25), 0 10px 26px rgba(0,0,0,0.22)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 16px rgba(229,9,20,0.18), 0 8px 24px rgba(0,0,0,0.2)"; }}
             onClick={onStartMatching}
           >
             Start Matching <ChevronRight size={16} />
@@ -254,46 +254,86 @@ function PosterStack({ mx, my, onSelectMovie }: { mx: number; my: number; onSele
     });
   }, []);
 
-  return (
-    <div style={{ position: "relative", width: 340, height: 460 }}>
-      {/* Ambient glow */}
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, rgba(239,68,68,0.4) 0%, transparent 70%)", filter: "blur(48px)", zIndex: 0 }} />
+  const main = posters[0];
+  const behind = posters.slice(1, 5);
 
-      {/* Poster group with parallax */}
-      <div style={{ position: "relative", width: "100%", height: "100%", transform: `perspective(1100px) rotateY(${mx * -4}deg) rotateX(${my * 2.5}deg)`, transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
-        {posters.map((p, i) => {
-          const c = POSTER_CONFIGS[i] || POSTER_CONFIGS[0];
+  const BACK = [
+    { rot: -12, tx: -78,  ty: 10, tz: -55,  scale: 0.9,  z: 4, glow: "rgba(59,130,246,0.5)" },
+    { rot: 12,  tx: 78,   ty: 10, tz: -55,  scale: 0.9,  z: 3, glow: "rgba(229,9,20,0.5)" },
+    { rot: -22, tx: -134, ty: 24, tz: -120, scale: 0.8,  z: 2, glow: "rgba(99,102,241,0.45)" },
+    { rot: 22,  tx: 134,  ty: 24, tz: -120, scale: 0.8,  z: 1, glow: "rgba(229,9,20,0.45)" },
+  ];
+
+  if (!main) return null;
+
+  return (
+    <div style={{ position: "relative", width: 460, height: 540, perspective: 1200 }}>
+      {/* Cool ambient glow (behind — blue/purple) */}
+      <div style={{ position: "absolute", top: "4%", left: "6%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.32) 0%, transparent 70%)", filter: "blur(42px)", zIndex: 0, pointerEvents: "none" }} />
+      {/* Warm ambient glow (under main card — orange) */}
+      <div style={{ position: "absolute", bottom: "6%", right: "4%", width: 270, height: 270, borderRadius: "50%", background: "radial-gradient(circle, rgba(229,9,20,0.30) 0%, transparent 70%)", filter: "blur(48px)", zIndex: 0, pointerEvents: "none" }} />
+
+      {/* Parallax group */}
+      <div style={{ position: "absolute", inset: 0, transform: `rotateY(${mx * -5}deg) rotateX(${my * 3}deg)`, transformStyle: "preserve-3d", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
+
+        {/* Behind cards (cooler tint) — fanned on both sides */}
+        {behind.map((p, i) => {
+          const c = BACK[i] || BACK[BACK.length - 1];
           return (
             <div
-              key={i}
-              style={{
-                position: "absolute",
-                width: 190, height: 285,
-                left: "50%", top: "50%",
-                marginLeft: -95, marginTop: -142,
-                borderRadius: 18,
-                overflow: "hidden",
-                transform: `translateX(${c.tx}px) translateY(${c.ty}px) rotate(${c.rotation}deg) scale(${c.scale})`,
-                zIndex: c.zIndex,
-                boxShadow: `0 20px 48px rgba(0,0,0,0.65), 0 0 32px rgba(239,68,68,${0.15 + (c.zIndex === 5 ? 0.25 : 0)})`,
-                transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease",
-                cursor: "pointer",
-                background: "#1a0a2e",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.transform = `translateX(${c.tx}px) translateY(${c.ty - 16}px) rotate(${c.rotation * 0.4}deg) scale(${c.scale + 0.06})`; e.currentTarget.style.zIndex = "20"; e.currentTarget.style.boxShadow = "0 36px 72px rgba(0,0,0,0.7), 0 0 64px rgba(239,68,68,0.45)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = `translateX(${c.tx}px) translateY(${c.ty}px) rotate(${c.rotation}deg) scale(${c.scale})`; e.currentTarget.style.zIndex = String(c.zIndex); e.currentTarget.style.boxShadow = `0 20px 48px rgba(0,0,0,0.65), 0 0 32px rgba(239,68,68,${0.15 + (c.zIndex === 5 ? 0.25 : 0)})`; }}
+              key={`b-${i}`}
               onClick={() => onSelectMovie(p)}
+              style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", cursor: "pointer", transform: `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${c.scale})`, zIndex: c.z, boxShadow: `0 24px 60px rgba(0,0,0,0.6), 0 0 30px ${c.glow}`, border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, z-index 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = `translate(${c.tx * 0.35}px, ${c.ty}px) translateZ(70px) rotate(0deg) scale(1.06)`; e.currentTarget.style.zIndex = "30"; e.currentTarget.style.boxShadow = `0 44px 90px rgba(0,0,0,0.75), 0 0 56px ${c.glow}`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${c.scale})`; e.currentTarget.style.zIndex = String(c.z); e.currentTarget.style.boxShadow = `0 24px 60px rgba(0,0,0,0.6), 0 0 30px ${c.glow}`; }}
             >
-              <img src={p.img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px" }}>
-                <p style={{ color: "white", fontSize: 11, fontWeight: 700, fontFamily: "Manrope,sans-serif", margin: 0 }}>{p.title}</p>
-                <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 9, fontFamily: "Inter,sans-serif", margin: 0 }}>{p.genre}</p>
-              </div>
+              <img src={p.img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.85) brightness(0.82)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(59,130,246,0.28), rgba(229,9,20,0.32))", mixBlendMode: "overlay" }} />
             </div>
           );
         })}
+
+        {/* Main card (warm, emphasized) */}
+        <div
+          onClick={() => onSelectMovie(main)}
+          style={{
+            position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", zIndex: 10, cursor: "pointer",
+            border: "1px solid rgba(255,255,255,0.14)",
+            boxShadow: "0 40px 90px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)",
+            background: "#0c0c12",
+            transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 50px 100px rgba(0,0,0,0.75), 0 0 70px rgba(229,9,20,0.5)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 40px 90px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)"; }}
+        >
+          <img src={main.img} alt={main.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {/* Warm cinematic overlay */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(229,9,20,0.12) 0%, transparent 28%, rgba(0,0,0,0.55) 68%, rgba(0,0,0,0.92) 100%)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "26px 24px" }}>
+            <p style={{ fontFamily: "Inter,sans-serif", fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,170,170,0.85)", margin: "0 0 10px" }}>Tonight's Pick</p>
+            <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 26, lineHeight: 1.12, letterSpacing: "0.01em", color: "white", margin: 0 }}>{main.title}</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 12, fontFamily: "Inter,sans-serif", fontSize: 13, color: "rgba(255,255,255,0.62)" }}>
+              {main.genre ? <span>{main.genre}</span> : null}
+              {main.year ? <span>· {main.year}</span> : null}
+              {typeof main.rating === "number" && main.rating > 0 ? (
+                <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#F59E0B", fontWeight: 700 }}><Star size={13} fill="#F59E0B" color="#F59E0B" /> {main.rating.toFixed(1)}</span>
+              ) : null}
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Floating glassmorphism action buttons — drift around the stack */}
+      <button onClick={() => onSelectMovie(main)} aria-label="Like" style={{ position: "absolute", top: "2%", right: "-6%", zIndex: 20, width: 60, height: 60, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.5)", background: "rgba(20,12,16,0.5)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 28px rgba(229,9,20,0.55)", animation: "float-a 3.4s ease-in-out infinite", transition: "transform 0.2s, box-shadow 0.2s" }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.12)"; e.currentTarget.style.boxShadow = "0 0 42px rgba(229,9,20,0.85)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 28px rgba(229,9,20,0.55)"; }}>
+        <Heart size={26} fill="#E50914" />
+      </button>
+      <button onClick={() => onSelectMovie(main)} aria-label="Skip" style={{ position: "absolute", bottom: "8%", left: "-8%", zIndex: 20, width: 60, height: 60, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.5)", background: "rgba(14,12,24,0.5)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 28px rgba(229,9,20,0.55)", animation: "float-b 3.8s ease-in-out infinite 0.4s", transition: "transform 0.2s, box-shadow 0.2s" }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.12)"; e.currentTarget.style.boxShadow = "0 0 42px rgba(229,9,20,0.85)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 28px rgba(229,9,20,0.55)"; }}>
+        <X size={28} />
+      </button>
     </div>
   );
 }
@@ -317,7 +357,7 @@ function MovieDetailModal({ movie, onClose, onStartMatching }: { movie: Movie | 
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ position: "relative", width: "100%", maxWidth: 760, maxHeight: "88vh", overflowY: "auto", borderRadius: 24, background: "#0c0c0f", border: "1px solid rgba(244,63,94,0.25)", boxShadow: "0 40px 120px rgba(0,0,0,0.7), 0 0 60px rgba(244,63,94,0.12)", animation: "modal-pop 0.26s cubic-bezier(0.22,1,0.36,1)" }}
+        style={{ position: "relative", width: "100%", maxWidth: 760, maxHeight: "88vh", overflowY: "auto", borderRadius: 24, background: "#0c0c0f", border: "1px solid rgba(229,9,20,0.25)", boxShadow: "0 40px 120px rgba(0,0,0,0.7), 0 0 60px rgba(229,9,20,0.12)", animation: "modal-pop 0.26s cubic-bezier(0.22,1,0.36,1)" }}
       >
         {/* Backdrop */}
         <div style={{ position: "relative", height: 240, backgroundImage: `url(${backdrop})`, backgroundSize: "cover", backgroundPosition: "center" }}>
@@ -325,7 +365,7 @@ function MovieDetailModal({ movie, onClose, onStartMatching }: { movie: Movie | 
           <button
             onClick={onClose}
             style={{ position: "absolute", top: 16, right: 16, width: 38, height: 38, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.18)", background: "rgba(12,12,15,0.6)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#F0EFFA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(244,63,94,0.4)")}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(229,9,20,0.4)")}
             onMouseLeave={e => (e.currentTarget.style.background = "rgba(12,12,15,0.6)")}
             aria-label="Close"
           >
@@ -345,7 +385,7 @@ function MovieDetailModal({ movie, onClose, onStartMatching }: { movie: Movie | 
                   <Star size={14} fill="#F59E0B" color="#F59E0B" /> {movie.rating.toFixed(1)}
                 </span>
               ) : null}
-              {movie.genre ? <span style={{ color: "rgba(244,63,94,0.85)", fontWeight: 600 }}>{movie.genre}</span> : null}
+              {movie.genre ? <span style={{ color: "rgba(229,9,20,0.85)", fontWeight: 600 }}>{movie.genre}</span> : null}
               {typeof movie.matchPct === "number" ? (
                 <span style={{ display: "flex", alignItems: "center", gap: 6, color: "#10B981", fontWeight: 700 }}>✓ {movie.matchPct}% match</span>
               ) : null}
@@ -361,16 +401,16 @@ function MovieDetailModal({ movie, onClose, onStartMatching }: { movie: Movie | 
           {movie.tags && movie.tags.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 22 }}>
               {movie.tags.map((t, i) => (
-                <span key={i} style={{ padding: "6px 14px", borderRadius: 50, background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.28)", color: "#fecdd3", fontSize: 12, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
+                <span key={i} style={{ padding: "6px 14px", borderRadius: 50, background: "rgba(229,9,20,0.1)", border: "1px solid rgba(229,9,20,0.28)", color: "#f7b6ba", fontSize: 12, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
               ))}
             </div>
           )}
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 28 }}>
             <button
-              style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 28px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#b91c1c,#ef4444)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 36px rgba(239,68,68,0.4), 0 10px 40px rgba(0,0,0,0.4)", transition: "transform 0.25s, box-shadow 0.25s" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 52px rgba(244,63,94,0.7), 0 16px 48px rgba(0,0,0,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 36px rgba(239,68,68,0.4), 0 10px 40px rgba(0,0,0,0.4)"; }}
+              style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 28px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#B20710,#E50914)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 36px rgba(229,9,20,0.4), 0 10px 40px rgba(0,0,0,0.4)", transition: "transform 0.25s, box-shadow 0.25s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 52px rgba(229,9,20,0.7), 0 16px 48px rgba(0,0,0,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 36px rgba(229,9,20,0.4), 0 10px 40px rgba(0,0,0,0.4)"; }}
               onClick={() => { onClose(); onStartMatching(); }}
             >
               Start Matching <ChevronRight size={18} />
@@ -425,7 +465,7 @@ function MovieSearchModal({ onClose, onSelectMovie }: { onClose: () => void; onS
       style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", display: "flex", flexDirection: "column", alignItems: "center", padding: "72px 24px 48px", animation: "fade-in 0.2s ease" }}
     >
       <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 860 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderRadius: 16, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(244,63,94,0.28)", boxShadow: "0 0 32px rgba(244,63,94,0.15)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderRadius: 16, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(229,9,20,0.28)", boxShadow: "0 0 32px rgba(229,9,20,0.15)" }}>
           <Search size={18} color="rgba(240,239,250,0.5)" />
           <input
             ref={inputRef}
@@ -468,7 +508,7 @@ function MovieSearchModal({ onClose, onSelectMovie }: { onClose: () => void; onS
                   key={m.id}
                   onClick={() => { onSelectMovie(m); onClose(); }}
                   style={{ cursor: "pointer", borderRadius: 14, overflow: "hidden", background: "#0c0c0f", border: "1px solid rgba(255,255,255,0.08)", transition: "transform 0.2s, border-color 0.2s, box-shadow 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(244,63,94,0.5)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.55), 0 0 24px rgba(244,63,94,0.2)"; }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(229,9,20,0.5)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.55), 0 0 24px rgba(229,9,20,0.2)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
                   <div style={{ position: "relative", aspectRatio: "2 / 3", background: "#1a0a2e" }}>
@@ -493,10 +533,10 @@ function MovieSearchModal({ onClose, onSelectMovie }: { onClose: () => void; onS
 
 function Hero({ mx, my, onStartMatching, onExploreMovies, onSelectMovie }: { mx: number; my: number; onStartMatching: () => void; onExploreMovies: () => void; onSelectMovie: (m: Movie) => void }) {
   return (
-    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", background: `radial-gradient(ellipse 90% 80% at 68% 50%, rgba(244,63,94,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 12% 85%, rgba(136,19,55,0.05) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 88% 8%, rgba(244,63,94,0.03) 0%, transparent 45%), #050505` }}>
+    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", background: `radial-gradient(ellipse 90% 80% at 68% 50%, rgba(229,9,20,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 12% 85%, rgba(136,19,55,0.05) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 88% 8%, rgba(229,9,20,0.03) 0%, transparent 45%), #050505` }}>
       {/* Background lights */}
-      <div style={{ position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%)", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,63,94,0.08) 0%, transparent 70%)", filter: "blur(100px)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", left: "3%", bottom: "5%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(159,18,57,0.04) 0%, transparent 70%)", filter: "blur(80px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", right: "8%", top: "50%", transform: "translateY(-50%)", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(229,9,20,0.08) 0%, transparent 70%)", filter: "blur(100px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", left: "3%", bottom: "5%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(178,7,16,0.04) 0%, transparent 70%)", filter: "blur(80px)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 24px 48px", width: "100%" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 380px), 1fr))", gap: 64, alignItems: "center" }}>
@@ -514,9 +554,9 @@ function Hero({ mx, my, onStartMatching, onExploreMovies, onSelectMovie }: { mx:
             </p>
 
             <div className="reveal d3" style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
-              <button style={{ display: "flex", alignItems: "center", gap: 10, padding: "15px 28px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#e11d48,#f43f5e)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 36px rgba(244,63,94,0.45), 0 10px 40px rgba(0,0,0,0.4)", transition: "transform 0.25s, box-shadow 0.25s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 52px rgba(244,63,94,0.7), 0 16px 48px rgba(0,0,0,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 36px rgba(244,63,94,0.45), 0 10px 40px rgba(0,0,0,0.4)"; }}
+              <button style={{ display: "flex", alignItems: "center", gap: 10, padding: "15px 28px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#B20710,#E50914)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 36px rgba(229,9,20,0.45), 0 10px 40px rgba(0,0,0,0.4)", transition: "transform 0.25s, box-shadow 0.25s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 52px rgba(229,9,20,0.7), 0 16px 48px rgba(0,0,0,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 36px rgba(229,9,20,0.45), 0 10px 40px rgba(0,0,0,0.4)"; }}
                 onClick={onStartMatching}>
                 Start a Movie Night <ChevronRight size={18} />
               </button>
@@ -545,18 +585,18 @@ function Hero({ mx, my, onStartMatching, onExploreMovies, onSelectMovie }: { mx:
 
 function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
   const steps = [
-    { emoji: "🏠", num: "01", title: "Create Room",     desc: "Start a session and share a link. Your crew joins in seconds — no app download needed.",    color: "#f43f5e", cta: "Invite friends →" },
-    { emoji: "👆", num: "02", title: "Everyone Swipes",  desc: "Each person swipes through curated picks. Like what excites you. Skip the rest. Fast.",       color: "#ef4444", cta: "Swipe to match →" },
-    { emoji: "🎉", num: "03", title: "Find Your Match",  desc: "CineMatch reveals the overlap — the one film the whole group actually wants to watch.",        color: "#e11d48", cta: "4/4 MATCH!" },
+    { emoji: "🏠", num: "01", title: "Create Room",     desc: "Start a session and share a link. Your crew joins in seconds — no app download needed.",    color: "#E50914", cta: "Invite friends →" },
+    { emoji: "👆", num: "02", title: "Everyone Swipes",  desc: "Each person swipes through curated picks. Like what excites you. Skip the rest. Fast.",       color: "#E50914", cta: "Swipe to match →" },
+    { emoji: "🎉", num: "03", title: "Find Your Match",  desc: "CineMatch reveals the overlap — the one film the whole group actually wants to watch.",        color: "#B20710", cta: "4/4 MATCH!" },
   ];
 
   return (
-    <section style={{ position: "relative", padding: "128px 0", background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(244,63,94,0.06) 0%, transparent 60%), #06060A` }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(244,63,94,0.32), transparent)" }} />
+    <section style={{ position: "relative", padding: "128px 0", background: `radial-gradient(ellipse 80% 60% at 50% 0%, rgba(229,9,20,0.06) 0%, transparent 60%), #06060A` }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(229,9,20,0.32), transparent)" }} />
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 80 }}>
-          <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,63,94,0.7)", marginBottom: 16 }}>How It Works</p>
+          <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(229,9,20,0.7)", marginBottom: 16 }}>How It Works</p>
           <h2 className="reveal d1" style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: "clamp(32px,4vw,52px)", letterSpacing: "-0.025em", margin: 0 }}>
             Three steps to <span className="grad-vp">movie night bliss</span>
           </h2>
@@ -576,9 +616,9 @@ function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
                 <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 22, margin: "0 0 12px", letterSpacing: "-0.02em" }}>{s.title}</h3>
                 <p style={{ fontFamily: "Inter,sans-serif", fontSize: 15, color: "rgba(240,239,250,0.56)", lineHeight: 1.7, margin: "0 0 22px" }}>{s.desc}</p>
                 {s.cta === "Invite friends →" ? (
-                  <button onClick={onStartMatching} style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", borderRadius: 999, background: "rgba(239,68,68,0.09)", border: `1px solid ${s.color}55`, color: s.color, fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif", letterSpacing: "0.02em", cursor: "pointer", transition: "background 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.18)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(239,68,68,0.09)"}>{s.cta}</button>
+                  <button onClick={onStartMatching} style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", borderRadius: 999, background: "rgba(229,9,20,0.09)", border: `1px solid ${s.color}55`, color: s.color, fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif", letterSpacing: "0.02em", cursor: "pointer", transition: "background 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(229,9,20,0.18)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "rgba(229,9,20,0.09)"}>{s.cta}</button>
                 ) : (
                   <span style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", borderRadius: 999, background: "rgba(255,255,255,0.02)", border: `1px solid ${s.color}22`, color: s.color, fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif", letterSpacing: "0.02em" }}>{s.cta}</span>
                 )}
@@ -586,7 +626,7 @@ function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
               {i < steps.length - 1 && (
                 <div className="hiw-arrow" aria-hidden>
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <span style={{ width: 28, height: 1, background: "linear-gradient(to right, rgba(244,63,94,0.08), rgba(244,63,94,0.6))" }} />
+                    <span style={{ width: 28, height: 1, background: "linear-gradient(to right, rgba(229,9,20,0.08), rgba(229,9,20,0.6))" }} />
                     <ChevronRight size={22} />
                   </div>
                 </div>
@@ -597,11 +637,11 @@ function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
 
         {/* Match moment */}
         <div className="reveal d4" style={{ marginTop: 64, display: "flex", justifyContent: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 16, padding: "20px 32px", borderRadius: 20, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)", boxShadow: "0 0 48px rgba(239,68,68,0.08)" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 16, padding: "20px 32px", borderRadius: 20, background: "rgba(229,9,20,0.07)", border: "1px solid rgba(229,9,20,0.25)", boxShadow: "0 0 48px rgba(229,9,20,0.08)" }}>
             <span style={{ fontSize: 28 }}>🎉</span>
             <div>
-              <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, color: "#EF4444", margin: "0 0 2px" }}>IT'S A MATCH!</p>
-              <p style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 18, margin: 0 }}>4/4 Friends agree on <span style={{ color: "#EF4444" }}>Dune: Part Two</span></p>
+              <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, color: "#E50914", margin: "0 0 2px" }}>IT'S A MATCH!</p>
+              <p style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 18, margin: 0 }}>4/4 Friends agree on <span style={{ color: "#E50914" }}>Dune: Part Two</span></p>
             </div>
             <div style={{ display: "flex", marginLeft: 8 }}>
               {["A","J","S","R"].map((l, i) => (
@@ -637,31 +677,31 @@ function MatchCelebration({ movie, onReset }: { movie: Movie | (typeof SWIPE_MOV
         ))}
       </div>
 
-      <div style={{ display: "inline-block", padding: "8px 24px", borderRadius: 50, background: "linear-gradient(135deg,#7C3AED,#EC4899)", color: "white", fontSize: 13, fontWeight: 800, fontFamily: "Inter,sans-serif", letterSpacing: "0.05em", marginBottom: 32, boxShadow: "0 0 40px rgba(124,58,237,0.6)" }}>
+      <div style={{ display: "inline-block", padding: "8px 24px", borderRadius: 50, background: "linear-gradient(135deg,#B20710,#E50914)", color: "white", fontSize: 13, fontWeight: 800, fontFamily: "Inter,sans-serif", letterSpacing: "0.05em", marginBottom: 32, boxShadow: "0 0 40px rgba(229,9,20,0.6)" }}>
         🎉 IT'S A MATCH!
       </div>
 
-      <div style={{ position: "relative", width: 220, height: 310, margin: "0 auto 28px", borderRadius: 24, overflow: "hidden", boxShadow: "0 0 80px rgba(124,58,237,0.5), 0 32px 64px rgba(0,0,0,0.6)", animation: "pulse-ring 1.5s ease-out" }}>
+      <div style={{ position: "relative", width: 220, height: 310, margin: "0 auto 28px", borderRadius: 24, overflow: "hidden", boxShadow: "0 0 80px rgba(229,9,20,0.5), 0 32px 64px rgba(0,0,0,0.6)", animation: "pulse-ring 1.5s ease-out" }}>
         <img src={movie.img} alt={movie.title} style={{ width: "100%", height: "100%", objectFit: "cover", background: "#1a0a2e" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 50%)" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 16px" }}>
           <p style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 16, color: "white", margin: 0 }}>{movie.title}</p>
         </div>
-        <div style={{ position: "absolute", inset: 0, borderRadius: 24, border: "2px solid rgba(124,58,237,0.7)", boxShadow: "inset 0 0 32px rgba(124,58,237,0.2)" }} />
+        <div style={{ position: "absolute", inset: 0, borderRadius: 24, border: "2px solid rgba(229,9,20,0.7)", boxShadow: "inset 0 0 32px rgba(229,9,20,0.2)" }} />
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
         {["A","J","S","R"].map((l, i) => (
-          <div key={i} style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", border: "2px solid #EF4444", background: `hsl(${i*52+240},58%,44%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, marginLeft: i ? -10 : 0, zIndex: i, fontFamily: "Inter,sans-serif" }}>
+          <div key={i} style={{ position: "relative", width: 40, height: 40, borderRadius: "50%", border: "2px solid #E50914", background: `hsl(${i*52+240},58%,44%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, marginLeft: i ? -10 : 0, zIndex: i, fontFamily: "Inter,sans-serif" }}>
             {l}
-            <div style={{ position: "absolute", top: -3, right: -3, width: 14, height: 14, borderRadius: "50%", background: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ position: "absolute", top: -3, right: -3, width: 14, height: 14, borderRadius: "50%", background: "#E50914", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Check size={8} color="white" strokeWidth={3} />
             </div>
           </div>
         ))}
       </div>
 
-      <p style={{ fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#EF4444", margin: "0 0 6px" }}>4/4 friends matched!</p>
+      <p style={{ fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#E50914", margin: "0 0 6px" }}>4/4 friends matched!</p>
       <p style={{ fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(240,239,250,0.4)", margin: "0 0 32px" }}>Everyone wants to watch {movie.title}</p>
 
       <button onClick={onReset} style={{ padding: "10px 24px", borderRadius: 50, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(240,239,250,0.65)", fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "background 0.2s" }}
@@ -709,11 +749,11 @@ function SwipeDemo() {
 
   return (
     <section style={{ padding: "128px 0", background: "#06060A", position: "relative" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(236,72,153,0.4), transparent)" }} />
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(229,9,20,0.4), transparent)" }} />
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 64 }}>
-          <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(236,72,153,0.7)", marginBottom: 16 }}>Try It</p>
+          <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(229,9,20,0.7)", marginBottom: 16 }}>Try It</p>
           <h2 className="reveal d1" style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: "clamp(30px,4vw,50px)", letterSpacing: "-0.025em", margin: "0 0 12px" }}>
             Swipe to find your <span className="grad-vp">perfect movie</span>
           </h2>
@@ -726,7 +766,7 @@ function SwipeDemo() {
               {/* Progress dots */}
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 {demoMovies.map((_, i) => (
-                  <div key={i} style={{ height: 4, borderRadius: 2, transition: "all 0.4s ease", width: i === idx ? 24 : 8, background: i < idx ? "#8B5CF6" : i === idx ? "#EC4899" : "rgba(255,255,255,0.14)" }} />
+                  <div key={i} style={{ height: 4, borderRadius: 2, transition: "all 0.4s ease", width: i === idx ? 24 : 8, background: i < idx ? "#E50914" : i === idx ? "#E50914" : "rgba(255,255,255,0.14)" }} />
                 ))}
               </div>
 
@@ -743,7 +783,7 @@ function SwipeDemo() {
                   transform: dir === "right" ? "translateX(160%) rotate(22deg)" : dir === "left" ? "translateX(-160%) rotate(-22deg)" : "translateX(0) rotate(0)",
                   transition: dir ? "transform 0.48s cubic-bezier(0.25,0.46,0.45,0.94)" : "none",
                   animation: dir ? "none" : "swipe-card-enter 0.48s cubic-bezier(0.22,1,0.36,1) both",
-                  boxShadow: "0 32px 72px rgba(0,0,0,0.65), 0 0 48px rgba(139,92,246,0.2)",
+                  boxShadow: "0 32px 72px rgba(0,0,0,0.65), 0 0 48px rgba(229,9,20,0.2)",
                 }}>
                   <img src={movie.img} alt={movie.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.18) 50%, transparent 100%)" }} />
@@ -761,16 +801,16 @@ function SwipeDemo() {
                         <Star size={14} fill="#F59E0B" color="#F59E0B" />
                         <span style={{ fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 700 }}>{movie.rating}</span>
                       </div>
-                      <div style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(239,68,68,0.15)", color: "#EF4444", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{movie.matchPct}% match</div>
+                      <div style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(229,9,20,0.15)", color: "#E50914", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{movie.matchPct}% match</div>
                     </div>
                   </div>
 
                   {/* Swipe indicators */}
                   {dir === "right" && (
-                    <div style={{ position: "absolute", top: 24, left: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(236,72,153,0.2)", border: "2px solid #EC4899", color: "#EC4899", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(-8deg)" }}>LIKE ❤️</div>
+                    <div style={{ position: "absolute", top: 24, left: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(-8deg)" }}>LIKE ❤️</div>
                   )}
                   {dir === "left" && (
-                    <div style={{ position: "absolute", top: 24, right: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(239,68,68,0.2)", border: "2px solid #EF4444", color: "#EF4444", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(8deg)" }}>SKIP ✕</div>
+                    <div style={{ position: "absolute", top: 24, right: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(8deg)" }}>SKIP ✕</div>
                   )}
                 </div>
               </div>
@@ -782,15 +822,15 @@ function SwipeDemo() {
 
               {/* Buttons */}
               <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                <button onClick={() => swipe("left")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.09)", color: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s", boxShadow: "none" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.transform = "scale(1.08)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.09)"; e.currentTarget.style.transform = "scale(1)"; }}>
+                <button onClick={() => swipe("left")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.3)", background: "rgba(229,9,20,0.09)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s", boxShadow: "none" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.18)"; e.currentTarget.style.transform = "scale(1.08)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,9,20,0.09)"; e.currentTarget.style.transform = "scale(1)"; }}>
                   <X size={24} />
                 </button>
                 <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.28)", width: 60, textAlign: "center", margin: 0 }}>{idx + 1} / {demoMovies.length}</p>
-                <button onClick={() => swipe("right")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(236,72,153,0.35)", background: "rgba(236,72,153,0.1)", color: "#EC4899", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "0 0 20px rgba(236,72,153,0.2)" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(236,72,153,0.2)"; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(236,72,153,0.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(236,72,153,0.1)"; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(236,72,153,0.2)"; }}>
+                <button onClick={() => swipe("right")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.35)", background: "rgba(229,9,20,0.1)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "0 0 20px rgba(229,9,20,0.2)" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.2)"; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.4)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,9,20,0.1)"; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(229,9,20,0.2)"; }}>
                   <Heart size={24} />
                 </button>
               </div>
@@ -821,15 +861,15 @@ function Friends() {
   const R = 168, cx = 260, cy = 240;
 
   return (
-    <section style={{ padding: "128px 0", position: "relative", background: `radial-gradient(ellipse 80% 60% at 50% 50%, rgba(124,58,237,0.05) 0%, transparent 70%), #06060A` }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(139,92,246,0.45), transparent)" }} />
+    <section style={{ padding: "128px 0", position: "relative", background: `radial-gradient(ellipse 80% 60% at 50% 50%, rgba(229,9,20,0.05) 0%, transparent 70%), #06060A` }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(229,9,20,0.45), transparent)" }} />
 
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 380px), 1fr))", gap: 80, alignItems: "center" }}>
 
           {/* Text */}
           <div>
-            <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(239,68,68,0.7)", marginBottom: 20 }}>Social Matching</p>
+            <p className="reveal" style={{ fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(229,9,20,0.7)", marginBottom: 20 }}>Social Matching</p>
             <h2 className="reveal d1" style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: "clamp(32px,4vw,52px)", lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 24px" }}>
               Your taste.{" "}
               <span className="grad-vp">Their taste.</span>
@@ -852,13 +892,13 @@ function Friends() {
               ))}
             </div>
 
-            <div className="reveal d4" style={{ display: "inline-flex", alignItems: "center", gap: 14, padding: "14px 24px", borderRadius: 18, background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)" }}>
+            <div className="reveal d4" style={{ display: "inline-flex", alignItems: "center", gap: 14, padding: "14px 24px", borderRadius: 18, background: "rgba(229,9,20,0.07)", border: "1px solid rgba(229,9,20,0.25)" }}>
               <div style={{ display: "flex" }}>
                 {["A","J","S","R"].map((l, i) => (
-                  <div key={i} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(239,68,68,0.5)", background: `hsl(${i*52+240},58%,44%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, marginLeft: i ? -7 : 0, zIndex: i, fontFamily: "Inter,sans-serif" }}>{l}</div>
+                  <div key={i} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(229,9,20,0.5)", background: `hsl(${i*52+240},58%,44%)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, marginLeft: i ? -7 : 0, zIndex: i, fontFamily: "Inter,sans-serif" }}>{l}</div>
                 ))}
               </div>
-              <span style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 20, color: "#EF4444" }}>4/4 MATCH</span>
+              <span style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 20, color: "#E50914" }}>4/4 MATCH</span>
               <span style={{ fontSize: 22 }}>🎉</span>
             </div>
           </div>
@@ -899,7 +939,7 @@ function Friends() {
               </svg>
 
               {/* Center movie */}
-              <div style={{ position: "absolute", left: cx - 52, top: cy - 72, width: 104, height: 144, borderRadius: 16, overflow: "hidden", zIndex: 10, boxShadow: "0 0 48px rgba(124,58,237,0.55), 0 16px 40px rgba(0,0,0,0.55)", border: "2px solid rgba(124,58,237,0.55)", animation: visible ? "pulse-ring 2s ease-out infinite" : "none" }}>
+              <div style={{ position: "absolute", left: cx - 52, top: cy - 72, width: 104, height: 144, borderRadius: 16, overflow: "hidden", zIndex: 10, boxShadow: "0 0 48px rgba(229,9,20,0.55), 0 16px 40px rgba(0,0,0,0.55)", border: "2px solid rgba(229,9,20,0.55)", animation: visible ? "pulse-ring 2s ease-out infinite" : "none" }}>
                 <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=104&h=144&fit=crop&auto=format" alt="Dune" style={{ width: "100%", height: "100%", objectFit: "cover", background: "#1a0a2e" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%)" }} />
                 <p style={{ position: "absolute", bottom: 6, left: 4, right: 4, textAlign: "center", fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 8, color: "white" }}>Dune: Part Two</p>
@@ -953,26 +993,21 @@ function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
         Tonight's mood?
       </p>
 
-      <div className="reveal d2" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+      <div className="reveal d2" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
         {VIBES.map((v) => {
           const isSel = selected === v.label;
           return (
             <button
               key={v.label}
               onClick={() => setSelected(v.label)}
-              style={{
-                display: "flex", alignItems: "center", gap: 8, padding: "12px 18px", borderRadius: 50,
-                background: isSel ? "linear-gradient(135deg,#e11d48,#f43f5e)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${isSel ? "transparent" : "rgba(255,255,255,0.1)"}`,
-                color: isSel ? "white" : "rgba(240,239,250,0.7)",
-                fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 600, cursor: "pointer",
-                transition: "all 0.25s ease",
-                boxShadow: isSel ? "0 0 28px rgba(244,63,94,0.45), 0 10px 28px rgba(0,0,0,0.3)" : "none",
-              }}
-              onMouseEnter={e => { if (!isSel) { e.currentTarget.style.borderColor = "rgba(244,63,94,0.4)"; e.currentTarget.style.color = "#F0EFFA"; } }}
-              onMouseLeave={e => { if (!isSel) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(240,239,250,0.7)"; } }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
+              onMouseEnter={e => { if (!isSel) { const box = e.currentTarget.firstElementChild as HTMLElement; const lbl = e.currentTarget.lastElementChild as HTMLElement; box.style.borderColor = "rgba(229,9,20,0.4)"; box.style.boxShadow = "0 0 18px rgba(229,9,20,0.35)"; lbl.style.color = "#F0EFFA"; } }}
+              onMouseLeave={e => { if (!isSel) { const box = e.currentTarget.firstElementChild as HTMLElement; const lbl = e.currentTarget.lastElementChild as HTMLElement; box.style.borderColor = "rgba(255,255,255,0.1)"; box.style.boxShadow = "none"; lbl.style.color = "rgba(240,239,250,0.6)"; } }}
             >
-              <span style={{ fontSize: 18 }}>{v.emoji}</span> {v.label}
+              <div style={{ width: 62, height: 62, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, background: isSel ? "linear-gradient(135deg,#B20710,#E50914)" : "rgba(255,255,255,0.04)", border: `1px solid ${isSel ? "transparent" : "rgba(255,255,255,0.1)"}`, boxShadow: isSel ? "0 0 24px rgba(229,9,20,0.45), 0 8px 20px rgba(0,0,0,0.3)" : "none", transition: "all 0.25s ease" }}>
+                {v.emoji}
+              </div>
+              <span style={{ fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 600, color: isSel ? "#F0EFFA" : "rgba(240,239,250,0.6)", transition: "color 0.25s" }}>{v.label}</span>
             </button>
           );
         })}
@@ -984,13 +1019,13 @@ function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
         style={{
           marginTop: 32, display: "inline-flex", alignItems: "center", gap: 8,
           padding: "13px 26px", borderRadius: 50, border: "none",
-          background: !selected ? "rgba(244,63,94,0.35)" : "linear-gradient(135deg,#e11d48,#f43f5e)",
+          background: !selected ? "rgba(229,9,20,0.35)" : "linear-gradient(135deg,#B20710,#E50914)",
           color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: !selected ? "default" : "pointer",
-          boxShadow: !selected ? "none" : "0 0 32px rgba(244,63,94,0.45), 0 10px 30px rgba(0,0,0,0.3)",
+          boxShadow: !selected ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)",
           transition: "transform 0.25s, box-shadow 0.25s",
         }}
-        onMouseEnter={e => { if (selected) { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 48px rgba(244,63,94,0.7), 0 16px 40px rgba(0,0,0,0.4)"; } }}
-        onMouseLeave={e => { if (selected) { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(244,63,94,0.45), 0 10px 30px rgba(0,0,0,0.3)"; } }}
+        onMouseEnter={e => { if (selected) { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.7), 0 16px 40px rgba(0,0,0,0.4)"; } }}
+        onMouseLeave={e => { if (selected) { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)"; } }}
       >
         {selected ? `Start with ${selected} →` : "Pick a vibe to start"} <ChevronRight size={16} />
       </button>
@@ -1061,10 +1096,10 @@ function CTA({ onStartMatching, onSeeHowItWorks }: { onStartMatching: () => void
       </div>
 
       {/* Ambient glow */}
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 65% 65% at 50% 50%, rgba(124,58,237,0.28) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 65% 65% at 50% 50%, rgba(229,9,20,0.28) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 840, margin: "0 auto", padding: "0 24px", textAlign: "center" }}>
-        <div className="reveal" style={{ display: "inline-block", padding: "8px 20px", borderRadius: 50, background: "rgba(239,68,68,0.14)", border: "1px solid rgba(239,68,68,0.32)", color: "#EF4444", fontSize: 13, fontWeight: 700, fontFamily: "Inter,sans-serif", marginBottom: 32, boxShadow: "0 0 20px rgba(239,68,68,0.5)" }}>
+        <div className="reveal" style={{ display: "inline-block", padding: "8px 20px", borderRadius: 50, background: "rgba(229,9,20,0.14)", border: "1px solid rgba(229,9,20,0.32)", color: "#E50914", fontSize: 13, fontWeight: 700, fontFamily: "Inter,sans-serif", marginBottom: 32, boxShadow: "0 0 20px rgba(229,9,20,0.5)" }}>
           🎬 Free to start — no credit card needed
         </div>
 
@@ -1078,9 +1113,9 @@ function CTA({ onStartMatching, onSeeHowItWorks }: { onStartMatching: () => void
         </p>
 
         <div className="reveal d3" style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center", marginBottom: 56 }}>
-          <button style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 36px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#b91c1c,#ef4444)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 17, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 56px rgba(239,68,68,0.65), 0 0 112px rgba(239,68,68,0.25), 0 20px 48px rgba(0,0,0,0.5)", transition: "transform 0.25s, box-shadow 0.25s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 0 72px rgba(239,68,68,0.8), 0 0 144px rgba(239,68,68,0.3)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 56px rgba(239,68,68,0.65), 0 0 112px rgba(239,68,68,0.25), 0 20px 48px rgba(0,0,0,0.5)"; }}
+          <button style={{ display: "flex", alignItems: "center", gap: 10, padding: "18px 36px", borderRadius: 50, border: "none", background: "linear-gradient(135deg,#B20710,#E50914)", color: "white", fontFamily: "Inter,sans-serif", fontSize: 17, fontWeight: 700, cursor: "pointer", boxShadow: "0 0 56px rgba(229,9,20,0.65), 0 0 112px rgba(229,9,20,0.25), 0 20px 48px rgba(0,0,0,0.5)", transition: "transform 0.25s, box-shadow 0.25s" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 0 72px rgba(229,9,20,0.8), 0 0 144px rgba(229,9,20,0.3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 56px rgba(229,9,20,0.65), 0 0 112px rgba(229,9,20,0.25), 0 20px 48px rgba(0,0,0,0.5)"; }}
             onClick={onStartMatching}>
             Start Matching <ChevronRight size={20} />
           </button>
@@ -1095,7 +1130,7 @@ function CTA({ onStartMatching, onSeeHowItWorks }: { onStartMatching: () => void
         <div className="reveal d4" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 28 }}>
           {["No credit card required", "Free for groups up to 8", "2M+ movies in catalog"].map(t => (
             <span key={t} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "Inter,sans-serif", fontSize: 13, color: "rgba(240,239,250,0.32)" }}>
-              <span style={{ color: "#EF4444", fontWeight: 700 }}>✓</span> {t}
+              <span style={{ color: "#E50914", fontWeight: 700 }}>✓</span> {t}
             </span>
           ))}
         </div>
@@ -1113,7 +1148,7 @@ function Footer() {
     <footer style={{ padding: "48px 24px", background: "#06060A", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#7C3AED,#EC4899)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#B20710,#E50914)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Film size={13} color="white" />
           </div>
           <span style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 16 }}>Cine<span className="grad-vp">Match</span></span>
@@ -1209,7 +1244,7 @@ export default function App() {
       <SwipeDemo />
       <Friends />
       <section style={{ padding: "96px 0", position: "relative", background: "#06060A" }}>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(244,63,94,0.28), transparent)" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(229,9,20,0.28), transparent)" }} />
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px", display: "flex", flexWrap: "wrap", gap: 28, alignItems: "stretch" }}>
           <VibePicker onStartMatching={handleStartMatching} />
           <WhereToWatch />
