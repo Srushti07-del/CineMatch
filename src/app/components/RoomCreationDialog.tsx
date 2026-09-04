@@ -7,12 +7,9 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
   const [step, setStep] = useState<"form" | "room">(preloadedRoomId || joinMode ? "join" : "form");
   const [name, setName] = useState("");
   const [roomName, setRoomName] = useState("");
-  const [genre, setGenre] = useState("Trending");
   const [roomCode, setRoomCode] = useState(preloadedRoomId || "");
   const [copied, setCopied] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  const GENRES = ["Trending", "Action", "Sci-Fi", "Comedy", "Horror", "Romance", "Drama", "Animation"];
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -26,7 +23,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
 
   const handleCreate = async () => {
     if (!name.trim()) return;
-    await createRoom(name.trim(), roomName.trim() || undefined, genre);
+    await createRoom(name.trim(), roomName.trim() || undefined);
   };
 
   const handleJoin = async () => {
@@ -127,44 +124,6 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
                   }}
                   onKeyDown={e => e.key === "Enter" && handleCreate()}
                 />
-              </div>
-
-              <div>
-                <label style={{
-                  fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
-                  color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
-                }}>Movie Genre / Mood</label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {GENRES.map((g) => {
-                    const isSelected = genre === g;
-                    return (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setGenre(g)}
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: 20,
-                          fontSize: 12,
-                          fontWeight: isSelected ? 700 : 500,
-                          fontFamily: "Inter,sans-serif",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          border: isSelected
-                            ? "1px solid #E50914"
-                            : "1px solid rgba(255,255,255,0.08)",
-                          background: isSelected
-                            ? "linear-gradient(135deg, rgba(178,7,16,0.35), rgba(229,9,20,0.25))"
-                            : "rgba(255,255,255,0.03)",
-                          color: isSelected ? "#fff" : "rgba(240,239,250,0.6)",
-                          boxShadow: isSelected ? "0 0 16px rgba(229,9,20,0.3)" : "none",
-                        }}
-                      >
-                        {g}
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
 
               <div>

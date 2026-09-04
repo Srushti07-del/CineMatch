@@ -27,7 +27,7 @@ export class RoomStore {
       participants: [
         { id: hostId, name: hostName || "Host", joinedAt: new Date().toISOString() },
       ],
-      movies: movies && movies.length > 0 ? movies : SWIPE_MOVIES,
+      movies: movies !== undefined ? movies : [],
       currentMovieIndex: 0,
       matches: [],
       status: "waiting",
@@ -97,11 +97,11 @@ export class RoomStore {
         const matchedMovie = room.movies[room.currentMovieIndex];
         room.matches.push(matchedMovie);
         room.status = "matched";
-        room.currentMovieIndex += 1;
+        room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
         room.votes = {};
         return { room, matchedMovie, allVoted: true };
       } else {
-        room.currentMovieIndex += 1;
+        room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
         room.votes = {};
         return { room, allVoted: true };
       }

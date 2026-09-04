@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment, useCallback } from "react";
 import { Heart, X, ChevronRight, Star, Film, Play, Check, Users, Loader2, Search } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 import { RoomCreationDialog } from "@/app/components/RoomCreationDialog";
@@ -171,7 +171,7 @@ function Grain() {
 // NAVBAR
 // ─────────────────────────────────────────────
 
-function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void }) {
+function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowItWorks }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void; onSeeHowItWorks: () => void }) {
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
@@ -197,7 +197,8 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrol
           {["Discover", "How It Works", "Features"].map(l => (
             <a key={l} href="#" style={{ fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 500, color: "rgba(240,239,250,0.5)", textDecoration: "none", transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#F0EFFA")}
-              onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}>{l}</a>
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}
+              onClick={e => { e.preventDefault(); l === "How It Works" && onSeeHowItWorks(); }}>{l}</a>
           ))}
           <a href="#" style={{ fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 500, color: "rgba(240,239,250,0.5)", textDecoration: "none", transition: "color 0.2s" }}
             onMouseEnter={e => (e.currentTarget.style.color = "#F0EFFA")}
@@ -242,9 +243,8 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom }: { scrol
 // ─────────────────────────────────────────────
 
 function PosterStack({ mx, my, onSelectMovie }: { mx: number; my: number; onSelectMovie: (m: Movie) => void }) {
-  const [posters, setPosters] = useState<Movie[]>(
-    HERO_POSTERS.map((p) => ({ id: p.title, title: p.title, genre: p.genre, img: p.img, year: 0, rating: 0 }))
-  );
+  const [posters, setPosters] = useState<Movie[]>([]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTrendingMovies("week").then((movies) => {
@@ -254,86 +254,97 @@ function PosterStack({ mx, my, onSelectMovie }: { mx: number; my: number; onSele
     });
   }, []);
 
+  if (posters.length < 5) return null;
+
   const main = posters[0];
   const behind = posters.slice(1, 5);
 
   const BACK = [
-    { rot: -12, tx: -78,  ty: 10, tz: -55,  scale: 0.9,  z: 4, glow: "rgba(59,130,246,0.5)" },
-    { rot: 12,  tx: 78,   ty: 10, tz: -55,  scale: 0.9,  z: 3, glow: "rgba(229,9,20,0.5)" },
-    { rot: -22, tx: -134, ty: 24, tz: -120, scale: 0.8,  z: 2, glow: "rgba(99,102,241,0.45)" },
-    { rot: 22,  tx: 134,  ty: 24, tz: -120, scale: 0.8,  z: 1, glow: "rgba(229,9,20,0.45)" },
+    { rot: -10, tx: -62,  ty: 8,  tz: -50,  scale: 0.92, z: 4, opacity: 0.55 },
+    { rot: 10,  tx: 62,   ty: 8,  tz: -50,  scale: 0.92, z: 3, opacity: 0.55 },
+    { rot: -18, tx: -118, ty: 18, tz: -110, scale: 0.82, z: 2, opacity: 0.38 },
+    { rot: 18,  tx: 118,  ty: 18, tz: -110, scale: 0.82, z: 1, opacity: 0.38 },
   ];
 
-  if (!main) return null;
-
   return (
-    <div style={{ position: "relative", width: 460, height: 540, perspective: 1200 }}>
-      {/* Cool ambient glow (behind — blue/purple) */}
-      <div style={{ position: "absolute", top: "4%", left: "6%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.32) 0%, transparent 70%)", filter: "blur(42px)", zIndex: 0, pointerEvents: "none" }} />
-      {/* Warm ambient glow (under main card — orange) */}
-      <div style={{ position: "absolute", bottom: "6%", right: "4%", width: 270, height: 270, borderRadius: "50%", background: "radial-gradient(circle, rgba(229,9,20,0.30) 0%, transparent 70%)", filter: "blur(48px)", zIndex: 0, pointerEvents: "none" }} />
+    <div style={{ position: "relative", width: 460, height: 560, perspective: 1200 }}>
+      {/* Subtle red/orange ambient glow */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 340, height: 460, borderRadius: 24, background: "radial-gradient(circle, rgba(229,9,20,0.18) 0%, rgba(249,115,22,0.1) 45%, transparent 70%)", filter: "blur(36px)", zIndex: 0, pointerEvents: "none" }} />
 
-      {/* Parallax group */}
-      <div style={{ position: "absolute", inset: 0, transform: `rotateY(${mx * -5}deg) rotateX(${my * 3}deg)`, transformStyle: "preserve-3d", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
+      {/* Parallax tilt */}
+      <div style={{ position: "absolute", inset: 0, transform: `rotateY(${mx * -4}deg) rotateX(${my * 3}deg)`, transformStyle: "preserve-3d", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
 
-        {/* Behind cards (cooler tint) — fanned on both sides */}
+        {/* Behind cards — same premium style, dimmed */}
         {behind.map((p, i) => {
           const c = BACK[i] || BACK[BACK.length - 1];
+          const isHovered = hoveredIdx === i + 1;
+          const isMainHovered = hoveredIdx === 0;
+          const dimmed = isMainHovered ? 0.25 : c.opacity;
           return (
             <div
               key={`b-${i}`}
               onClick={() => onSelectMovie(p)}
-              style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", cursor: "pointer", transform: `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${c.scale})`, zIndex: c.z, boxShadow: `0 24px 60px rgba(0,0,0,0.6), 0 0 30px ${c.glow}`, border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, z-index 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = `translate(${c.tx * 0.35}px, ${c.ty}px) translateZ(70px) rotate(0deg) scale(1.06)`; e.currentTarget.style.zIndex = "30"; e.currentTarget.style.boxShadow = `0 44px 90px rgba(0,0,0,0.75), 0 0 56px ${c.glow}`; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${c.scale})`; e.currentTarget.style.zIndex = String(c.z); e.currentTarget.style.boxShadow = `0 24px 60px rgba(0,0,0,0.6), 0 0 30px ${c.glow}`; }}
+              onMouseEnter={() => setHoveredIdx(i + 1)}
+              onMouseLeave={() => setHoveredIdx(null)}
+              style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 400, marginLeft: -150, marginTop: -200, borderRadius: 20, overflow: "hidden", cursor: "pointer", transform: `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${isHovered ? c.scale + 0.08 : c.scale})`, zIndex: isHovered ? 30 : c.z, opacity: dimmed, border: "1px solid rgba(255,255,255,0.1)", boxShadow: isHovered ? "0 44px 90px rgba(0,0,0,0.75), 0 0 70px rgba(229,9,20,0.32), inset 0 0 0 1px rgba(255,255,255,0.08)" : "0 36px 80px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.22), inset 0 0 0 1px rgba(255,255,255,0.06)", background: "#0c0c12", transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, opacity 0.35s ease" }}
             >
-              <img src={p.img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.85) brightness(0.82)" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(59,130,246,0.28), rgba(229,9,20,0.32))", mixBlendMode: "overlay" }} />
+              <img src={p.img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.9) 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 18px", transform: isHovered ? "translateY(0)" : "translateY(0)", transition: "transform 0.35s ease" }}>
+                <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: isHovered ? 20 : 18, lineHeight: 1.15, letterSpacing: "-0.02em", color: "white", margin: "0 0 6px", transition: "font-size 0.35s ease" }}>{p.title}</h3>
+                <p style={{ fontFamily: "Inter,sans-serif", fontSize: isHovered ? 12 : 11, color: "rgba(255,255,255,0.5)", margin: 0, transition: "font-size 0.35s ease" }}>{p.genre}{p.year ? ` · ${p.year}` : ""}</p>
+                {isHovered && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+                    {typeof p.rating === "number" && p.rating > 0 ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 50, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>
+                        <Star size={10} fill="#F59E0B" color="#F59E0B" /> {p.rating.toFixed(1)}
+                      </span>
+                    ) : null}
+                    {typeof p.matchPct === "number" ? (
+                      <span style={{ padding: "3px 8px", borderRadius: 50, background: "rgba(229,9,20,0.18)", color: "#E50914", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{p.matchPct}% match</span>
+                    ) : null}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
 
-        {/* Main card (warm, emphasized) */}
+        {/* Main card (premium postcard) */}
         <div
           onClick={() => onSelectMovie(main)}
+          onMouseEnter={() => setHoveredIdx(0)}
+          onMouseLeave={() => setHoveredIdx(null)}
           style={{
-            position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", zIndex: 10, cursor: "pointer",
-            border: "1px solid rgba(255,255,255,0.14)",
-            boxShadow: "0 40px 90px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)",
-            background: "#0c0c12",
-            transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease",
+            position: "absolute", top: "50%", left: "50%", width: 300, height: 400, marginLeft: -150, marginTop: -200,
+            borderRadius: 20, overflow: "hidden", zIndex: 10, cursor: "pointer", background: "#0c0c12",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: hoveredIdx === 0 ? "0 50px 100px rgba(0,0,0,0.78), 0 0 80px rgba(229,9,20,0.38), inset 0 0 0 1px rgba(255,255,255,0.1)" : "0 36px 80px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.22), inset 0 0 0 1px rgba(255,255,255,0.06)",
+            transform: hoveredIdx === 0 ? "translateY(-10px) scale(1.06)" : "translateY(0) scale(1)",
+            transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1), box-shadow 0.45s ease",
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 50px 100px rgba(0,0,0,0.75), 0 0 70px rgba(229,9,20,0.5)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 40px 90px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)"; }}
         >
-          <img src={main.img} alt={main.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          {/* Warm cinematic overlay */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(229,9,20,0.12) 0%, transparent 28%, rgba(0,0,0,0.55) 68%, rgba(0,0,0,0.92) 100%)" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "26px 24px" }}>
-            <p style={{ fontFamily: "Inter,sans-serif", fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,170,170,0.85)", margin: "0 0 10px" }}>Tonight's Pick</p>
-            <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 26, lineHeight: 1.12, letterSpacing: "0.01em", color: "white", margin: 0 }}>{main.title}</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 12, fontFamily: "Inter,sans-serif", fontSize: 13, color: "rgba(255,255,255,0.62)" }}>
-              {main.genre ? <span>{main.genre}</span> : null}
-              {main.year ? <span>· {main.year}</span> : null}
+          <img src={main.img} alt={main.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.45s ease", transform: hoveredIdx === 0 ? "scale(1.08)" : "scale(1)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.88) 100%)" }} />
+
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: hoveredIdx === 0 ? "32px 28px 28px" : "28px 24px 24px", transition: "padding 0.35s ease" }}>
+            <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: hoveredIdx === 0 ? 28 : 24, lineHeight: 1.15, letterSpacing: "-0.02em", color: "white", margin: "0 0 8px", transition: "font-size 0.35s ease" }}>{main.title}</h3>
+            <p style={{ fontFamily: "Inter,sans-serif", fontSize: hoveredIdx === 0 ? 13 : 12, color: "rgba(255,255,255,0.5)", margin: "0 0 14px", transition: "font-size 0.35s ease" }}>
+              {main.genre}{main.year ? ` · ${main.year}` : ""}
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {typeof main.rating === "number" && main.rating > 0 ? (
-                <span style={{ display: "flex", alignItems: "center", gap: 4, color: "#F59E0B", fontWeight: 700 }}><Star size={13} fill="#F59E0B" color="#F59E0B" /> {main.rating.toFixed(1)}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 50, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>
+                  <Star size={12} fill="#F59E0B" color="#F59E0B" /> {main.rating.toFixed(1)}
+                </span>
+              ) : null}
+              {typeof main.matchPct === "number" ? (
+                <span style={{ padding: "4px 10px", borderRadius: 50, background: "rgba(229,9,20,0.18)", color: "#E50914", fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{main.matchPct}% match</span>
               ) : null}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Floating glassmorphism action buttons — drift around the stack */}
-      <button onClick={() => onSelectMovie(main)} aria-label="Like" style={{ position: "absolute", top: "2%", right: "-6%", zIndex: 20, width: 60, height: 60, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.5)", background: "rgba(20,12,16,0.5)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 28px rgba(229,9,20,0.55)", animation: "float-a 3.4s ease-in-out infinite", transition: "transform 0.2s, box-shadow 0.2s" }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.12)"; e.currentTarget.style.boxShadow = "0 0 42px rgba(229,9,20,0.85)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 28px rgba(229,9,20,0.55)"; }}>
-        <Heart size={26} fill="#E50914" />
-      </button>
-      <button onClick={() => onSelectMovie(main)} aria-label="Skip" style={{ position: "absolute", bottom: "8%", left: "-8%", zIndex: 20, width: 60, height: 60, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.5)", background: "rgba(14,12,24,0.5)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 0 28px rgba(229,9,20,0.55)", animation: "float-b 3.8s ease-in-out infinite 0.4s", transition: "transform 0.2s, box-shadow 0.2s" }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.12)"; e.currentTarget.style.boxShadow = "0 0 42px rgba(229,9,20,0.85)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 28px rgba(229,9,20,0.55)"; }}>
-        <X size={28} />
-      </button>
     </div>
   );
 }
@@ -720,6 +731,12 @@ function SwipeDemo() {
   const [matched, setMatched] = useState(false);
   const [hintVisible, setHintVisible] = useState(true);
 
+  const [dragX, setDragX] = useState(0);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchTrendingMovies("week").then((movies) => {
       if (movies && movies.length >= 5) {
@@ -740,12 +757,49 @@ function SwipeDemo() {
         setIdx(next);
       }
       setDir(null);
-    }, 480);
+      setDragX(0);
+      setDragY(0);
+    }, 360);
   };
 
-  const reset = () => { setIdx(0); setDir(null); setMatched(false); setHintVisible(true); };
+  const reset = () => { setIdx(0); setDir(null); setMatched(false); setHintVisible(true); setDragX(0); setDragY(0); };
 
   const movie = demoMovies[Math.min(idx, demoMovies.length - 1)];
+  const nextMovie = demoMovies[Math.min(idx + 1, demoMovies.length - 1)];
+  const nextNextMovie = demoMovies[Math.min(idx + 2, demoMovies.length - 1)];
+
+  const rotation = isDragging ? (dragX / 10) : dir === "right" ? 22 : dir === "left" ? -22 : 0;
+  const translateX = isDragging ? dragX : dir === "right" ? 160 : dir === "left" ? -160 : 0;
+  const translateY = isDragging ? dragY : 0;
+  const opacity = isDragging ? Math.min(1, 1 - Math.abs(dragX) / 400) : 1;
+
+  const handleStart = useCallback((clientX: number, clientY: number) => {
+    if (dir || matched) return;
+    dragStartRef.current = { x: clientX, y: clientY };
+    setIsDragging(true);
+    setDragX(0);
+    setDragY(0);
+  }, [dir, matched]);
+
+  const handleMove = useCallback((clientX: number, clientY: number) => {
+    if (!isDragging || !dragStartRef.current) return;
+    const dx = clientX - dragStartRef.current.x;
+    const dy = clientY - dragStartRef.current.y;
+    setDragX(dx);
+    setDragY(dy);
+  }, [isDragging]);
+
+  const handleEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (Math.abs(dragX) > 100) {
+      swipe(dragX > 0 ? "right" : "left");
+    } else {
+      setDragX(0);
+      setDragY(0);
+    }
+    dragStartRef.current = null;
+  }, [isDragging, dragX, swipe]);
 
   return (
     <section style={{ padding: "128px 0", background: "#06060A", position: "relative" }}>
@@ -771,46 +825,74 @@ function SwipeDemo() {
               </div>
 
               {/* Card stack */}
-              <div style={{ position: "relative", width: 320, height: 460 }}>
-                {/* Shadow card behind */}
-                {idx < demoMovies.length - 1 && (
-                  <div style={{ position: "absolute", inset: 0, top: 14, left: 12, right: 12, borderRadius: 28, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", transform: "scale(0.95) translateY(8px)", zIndex: 0 }} />
+              <div style={{ position: "relative", width: 340, height: 480 }}>
+                {/* Behind card 2 */}
+                {nextNextMovie && (
+                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(-110px) rotate(-12deg) scale(0.85)", zIndex: 1, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.25)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", opacity: 0.7 }}>
+                    <img src={nextNextMovie.img} alt={nextNextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.8) brightness(0.75)" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(229,9,20,0.2), rgba(178,7,16,0.3))", mixBlendMode: "overlay" }} />
+                  </div>
+                )}
+
+                {/* Behind card 1 */}
+                {nextMovie && (
+                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(110px) rotate(12deg) scale(0.85)", zIndex: 2, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.3)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", opacity: 0.85 }}>
+                    <img src={nextMovie.img} alt={nextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.85) brightness(0.8)" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(229,9,20,0.2), rgba(178,7,16,0.3))", mixBlendMode: "overlay" }} />
+                  </div>
                 )}
 
                 {/* Main card */}
-                <div style={{
-                  position: "absolute", inset: 0, borderRadius: 28, overflow: "hidden", zIndex: 5, background: "#1a0a2e",
-                  transform: dir === "right" ? "translateX(160%) rotate(22deg)" : dir === "left" ? "translateX(-160%) rotate(-22deg)" : "translateX(0) rotate(0)",
-                  transition: dir ? "transform 0.48s cubic-bezier(0.25,0.46,0.45,0.94)" : "none",
-                  animation: dir ? "none" : "swipe-card-enter 0.48s cubic-bezier(0.22,1,0.36,1) both",
-                  boxShadow: "0 32px 72px rgba(0,0,0,0.65), 0 0 48px rgba(229,9,20,0.2)",
-                }}>
+                <div
+                  ref={cardRef}
+                  onMouseDown={e => handleStart(e.clientX, e.clientY)}
+                  onMouseMove={e => { if (isDragging) handleMove(e.clientX, e.clientY); }}
+                  onMouseUp={() => handleEnd()}
+                  onMouseLeave={() => { if (isDragging) handleEnd(); }}
+                  onTouchStart={e => handleStart(e.touches[0].clientX, e.touches[0].clientY)}
+                  onTouchMove={e => handleMove(e.touches[0].clientX, e.touches[0].clientY)}
+                  onTouchEnd={() => handleEnd()}
+                  style={{
+                    position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", zIndex: 5, cursor: "grab", background: "#1a0a2e",
+                    transform: `translate(${translateX}px, ${translateY}px) rotate(${rotation}deg) scale(${isDragging ? 1.02 : 1})`,
+                    transition: isDragging ? "none" : dir ? "transform 0.48s cubic-bezier(0.25,0.46,0.45,0.94)" : "transform 0.48s cubic-bezier(0.22,1,0.36,1)",
+                    boxShadow: `0 40px 90px rgba(0,0,0,0.7), 0 0 60px rgba(229,9,20,0.35), inset 0 0 0 1px rgba(255,255,255,0.08)`,
+                    opacity,
+                    userSelect: "none",
+                    touchAction: "none",
+                  }}
+                >
                   <img src={movie.img} alt={movie.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.18) 50%, transparent 100%)" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }} />
 
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 28px" }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
                       {movie.tags?.map(t => (
-                        <span key={t} style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
+                        <span key={t} style={{ padding: "4px 12px", borderRadius: 50, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
                       ))}
                     </div>
-                    <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 24, color: "white", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{movie.title}</h3>
-                    <p style={{ fontFamily: "Inter,sans-serif", fontSize: 13, color: "rgba(255,255,255,0.48)", margin: "0 0 14px" }}>{movie.genre} · {movie.year}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <Star size={14} fill="#F59E0B" color="#F59E0B" />
-                        <span style={{ fontFamily: "Inter,sans-serif", fontSize: 13, fontWeight: 700 }}>{movie.rating}</span>
+                    <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 26, color: "white", margin: "0 0 6px", letterSpacing: "-0.02em" }}>{movie.title}</h3>
+                    <p style={{ fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(255,255,255,0.55)", margin: "0 0 14px" }}>{movie.genre} · {movie.year}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <Star size={15} fill="#F59E0B" color="#F59E0B" />
+                        <span style={{ fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 700 }}>{movie.rating}</span>
                       </div>
-                      <div style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(229,9,20,0.15)", color: "#E50914", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{movie.matchPct}% match</div>
+                      <div style={{ padding: "4px 12px", borderRadius: 50, background: "rgba(229,9,20,0.18)", color: "#E50914", fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{movie.matchPct}% match</div>
                     </div>
                   </div>
 
                   {/* Swipe indicators */}
                   {dir === "right" && (
-                    <div style={{ position: "absolute", top: 24, left: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(-8deg)" }}>LIKE ❤️</div>
+                    <div style={{ position: "absolute", top: 28, left: 24, padding: "10px 18px", borderRadius: 14, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 22, transform: "rotate(-10deg)" }}>LIKE ❤️</div>
                   )}
                   {dir === "left" && (
-                    <div style={{ position: "absolute", top: 24, right: 20, padding: "8px 16px", borderRadius: 12, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 18, transform: "rotate(8deg)" }}>SKIP ✕</div>
+                    <div style={{ position: "absolute", top: 28, right: 24, padding: "10px 18px", borderRadius: 14, background: "rgba(229,9,20,0.2)", border: "2px solid #E50914", color: "#E50914", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 22, transform: "rotate(10deg)" }}>SKIP ✕</div>
+                  )}
+                  {isDragging && (
+                    <div style={{ position: "absolute", top: 28, left: dragX > 40 ? 24 : "auto", right: dragX < -40 ? 24 : "auto", padding: "10px 18px", borderRadius: 14, background: dragX > 0 ? "rgba(229,9,20,0.2)" : "rgba(255,255,255,0.1)", border: `2px solid ${dragX > 0 ? "#E50914" : "rgba(255,255,255,0.3)"}`, color: dragX > 0 ? "#E50914" : "rgba(255,255,255,0.8)", fontFamily: "Manrope,sans-serif", fontWeight: 900, fontSize: 22, transform: `rotate(${dragX > 0 ? -10 : 10}deg)` }}>
+                      {dragX > 0 ? "LIKE ❤️" : "SKIP ✕"}
+                    </div>
                   )}
                 </div>
               </div>
@@ -821,17 +903,17 @@ function SwipeDemo() {
               )}
 
               {/* Buttons */}
-              <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                <button onClick={() => swipe("left")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.3)", background: "rgba(229,9,20,0.09)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s", boxShadow: "none" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.18)"; e.currentTarget.style.transform = "scale(1.08)"; }}
+              <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
+                <button onClick={() => swipe("left")} disabled={!!dir || isDragging} style={{ width: 76, height: 76, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.3)", background: "rgba(229,9,20,0.09)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "none" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.18)"; e.currentTarget.style.transform = "scale(1.1)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,9,20,0.09)"; e.currentTarget.style.transform = "scale(1)"; }}>
-                  <X size={24} />
+                  <X size={32} />
                 </button>
-                <p style={{ fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(255,255,255,0.28)", width: 60, textAlign: "center", margin: 0 }}>{idx + 1} / {demoMovies.length}</p>
-                <button onClick={() => swipe("right")} disabled={!!dir} style={{ width: 64, height: 64, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.35)", background: "rgba(229,9,20,0.1)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "0 0 20px rgba(229,9,20,0.2)" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.2)"; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,9,20,0.1)"; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(229,9,20,0.2)"; }}>
-                  <Heart size={24} />
+                <p style={{ fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(255,255,255,0.28)", width: 60, textAlign: "center", margin: 0 }}>{idx + 1} / {demoMovies.length}</p>
+                <button onClick={() => swipe("right")} disabled={!!dir || isDragging} style={{ width: 76, height: 76, borderRadius: "50%", border: "1px solid rgba(229,9,20,0.35)", background: "rgba(229,9,20,0.1)", color: "#E50914", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s, transform 0.2s, box-shadow 0.2s", boxShadow: "0 0 24px rgba(229,9,20,0.2)" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(229,9,20,0.2)"; e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.boxShadow = "0 0 36px rgba(229,9,20,0.45)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(229,9,20,0.1)"; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 24px rgba(229,9,20,0.2)"; }}>
+                  <Heart size={32} />
                 </button>
               </div>
             </>
@@ -1128,7 +1210,7 @@ function CTA({ onStartMatching, onSeeHowItWorks }: { onStartMatching: () => void
         </div>
 
         <div className="reveal d4" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 28 }}>
-          {["No credit card required", "Free for groups up to 8", "2M+ movies in catalog"].map(t => (
+          {["Create a room", "Invite friends", "Find your match"].map(t => (
             <span key={t} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "Inter,sans-serif", fontSize: 13, color: "rgba(240,239,250,0.32)" }}>
               <span style={{ color: "#E50914", fontWeight: 700 }}>✓</span> {t}
             </span>
@@ -1236,7 +1318,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: "#050505", color: "#F0EFFA", overflowX: "hidden", fontFamily: "Inter,sans-serif" }}>
       <style>{STYLES}</style>
       <Grain />
-      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} />
+      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} onSeeHowItWorks={handleSeeHowItWorks} />
       <Hero mx={mouse.x} my={mouse.y} onStartMatching={handleStartMatching} onExploreMovies={handleExploreMovies} onSelectMovie={setDetailMovie} />
       <div id="howitworks-section">
         <HowItWorks onStartMatching={handleStartMatching} />

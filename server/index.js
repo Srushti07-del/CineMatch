@@ -17,9 +17,8 @@ const store = new RoomStore();
 // ── REST API ──────────────────────────────────────────────
 
 app.post("/api/rooms", async (req, res) => {
-  const { name, hostName, genre } = req.body || {};
-  const movies = await getRoomMovies(genre);
-  const room = store.createRoom({ name, hostName, genre, movies });
+  const { name, hostName } = req.body || {};
+  const room = store.createRoom({ name, hostName });
   return res.status(201).json({ room });
 });
 
@@ -88,6 +87,16 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("chatMessage", (data) => {
+    const { roomId } = data || {};
+    if (!roomId) return;
+    io.to(`room:${roomId}`).emit("chatMessage", {
+      ...data,
+      id: data.id || `${Date.now()}-${socket.id}`,
+      createdAt: data.createdAt || new Date().toISOString(),
+    });
+  });
+
   socket.on("swipe", ({ roomId, participantId, movieId, direction }) => {
     const result = store.recordSwipe(roomId, participantId, movieId, direction);
     if (!result) {
@@ -106,9 +115,35 @@ io.on("connection", (socket) => {
       votes: { ...votes },
     });
 
+    io.to(`room:${roomId}`).emit("roomUpdated", { room });
+
     if (allVoted && matchedMovie) {
       io.to(`room:${roomId}`).emit("matchFound", { movie: matchedMovie, votes: {} });
     }
+  });
+
+  socket.on("addMovie", ({ roomId, movie }) => {
+    const room = store.getRoom(roomId);
+    if (!room) {
+      socket.emit("roomClosed", { reason: "Room no longer exists" });
+      return;
+    }
+    room.movies.push(movie);
+    room.updatedAt = new Date().toISOString();
+    io.to(`room:${roomId}`).emit("roomUpdated", { room });
+  });
+
+  socket.on("selectGenre", async ({ roomId, genre }) => {
+    const room = store.getRoom(roomId);
+    if (!room) {
+      socket.emit("roomClosed", { reason: "Room no longer exists" });
+      return;
+    }
+    const movies = await getRoomMovies(genre);
+    room.movies = movies;
+    room.genre = genre;
+    room.updatedAt = new Date().toISOString();
+    io.to(`room:${roomId}`).emit("genreSelected", { room });
   });
 
   socket.on("disconnect", () => {

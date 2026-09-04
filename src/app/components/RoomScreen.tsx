@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Heart, X, Copy, Check, ChevronLeft, Wifi, WifiOff, Users } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 import type { Movie } from "../../shared/types";
+import { ChatPanel } from "./ChatPanel";
 
 function SwipeCard({
   movie,
@@ -53,14 +54,20 @@ function SwipeCard({
 }
 
 export function RoomScreen({ onBack }: { onBack: () => void }) {
-  const { room, swipe, isConnected, participantId, participantName, leaveRoom } = useRoom();
+  const { room, swipe, sendMessage, selectGenre, messages, isConnected, participantId, participantName, leaveRoom } = useRoom();
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState<Movie | null>(null);
   const [copied, setCopied] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
   if (!room) return null;
 
   const movie = room.movies?.[room.currentMovieIndex];
+
+  const handleGenreSelect = (genre: string) => {
+    setSelectedGenre(genre);
+    selectGenre(genre);
+  };
 
   const handleSwipe = (direction: "left" | "right") => {
     if (dir || !movie || !isConnected) return;
@@ -173,8 +180,53 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
           </p>
         </div>
 
-        {/* Swipe area */}
-        {matched ? (
+        {/* Main content: swipe + chat side panel */}
+        <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+          {/* Left: Swipe area */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {(!room.movies || room.movies.length === 0) && !matched ? (
+              <div style={{ textAlign: "center", padding: "48px 24px" }}>
+                <h3 style={{
+                  fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 22,
+                  color: "white", margin: "0 0 8px", letterSpacing: "-0.02em"
+                }}>Pick a genre to start</h3>
+                <p style={{
+                  fontFamily: "Inter,sans-serif", fontSize: 14,
+                  color: "rgba(240,239,250,0.45)", margin: "0 0 24px"
+                }}>Everyone will swipe from the same list.</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+                  {["Action", "Sci-Fi", "Comedy", "Horror", "Romance", "Drama", "Animation"].map((g) => {
+                    const isSelected = selectedGenre === g;
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => handleGenreSelect(g)}
+                        style={{
+                          padding: "10px 18px",
+                          borderRadius: 20,
+                          fontSize: 13,
+                          fontWeight: isSelected ? 700 : 500,
+                          fontFamily: "Inter,sans-serif",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          border: isSelected
+                            ? "1px solid #E50914"
+                            : "1px solid rgba(255,255,255,0.08)",
+                          background: isSelected
+                            ? "linear-gradient(135deg, rgba(178,7,16,0.35), rgba(229,9,20,0.25))"
+                            : "rgba(255,255,255,0.03)",
+                          color: isSelected ? "#fff" : "rgba(240,239,250,0.6)",
+                          boxShadow: isSelected ? "0 0 16px rgba(229,9,20,0.3)" : "none",
+                        }}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : matched ? (
           <div style={{ textAlign: "center", padding: "48px 24px" }}>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 12, padding: "10px 28px",
@@ -202,18 +254,18 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
             {/* Progress */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {room.movies?.slice(0, room.currentMovieIndex + 1).map((_, i) => (
+              {room.movies?.slice(0, Math.min(room.currentMovieIndex + 1, room.movies.length)).map((_, i) => (
                 <div key={i} style={{
                   height: 4, borderRadius: 2, transition: "all 0.4s ease",
-                  width: i === room.currentMovieIndex ? 24 : 8,
-                  background: i < room.currentMovieIndex ? "#F59E0B" : i === room.currentMovieIndex ? "#EC4899" : "rgba(255,255,255,0.14)"
+                  width: i === room.currentMovieIndex % (room.movies.length || 1) ? 24 : 8,
+                  background: i < room.currentMovieIndex % (room.movies.length || 1) ? "#F59E0B" : i === room.currentMovieIndex % (room.movies.length || 1) ? "#EC4899" : "rgba(255,255,255,0.14)"
                 }} />
               ))}
             </div>
 
             {/* Card stack */}
             <div style={{ position: "relative", width: 340, height: 460 }}>
-              {room.currentMovieIndex < (room.movies?.length || 0) - 1 && (
+              {(room.currentMovieIndex + 1) % (room.movies?.length || 1) !== 0 && (
                 <div style={{ position: "absolute", inset: 0, top: 14, left: 12, right: 12, borderRadius: 28, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", transform: "scale(0.95) translateY(8px)", zIndex: 0 }} />
               )}
               <SwipeCard movie={movie} direction={dir} />
@@ -249,7 +301,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
               <span style={{
                 fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(240,239,250,0.28)",
                 width: 60, textAlign: "center"
-              }}>{room.currentMovieIndex + 1} / {room.movies?.length || 0}</span>
+              }}>{(room.currentMovieIndex % (room.movies?.length || 1)) + 1} / {room.movies?.length || 0}</span>
               <button
                 onClick={() => handleSwipe("right")}
                 disabled={!!dir || !isConnected}
@@ -278,9 +330,14 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "48px" }}>
-            <p style={{ fontFamily: "Inter,sans-serif", fontSize: 16, color: "rgba(240,239,250,0.32)" }}>No more movies to swipe. Room is finished.</p>
+            <p style={{ fontFamily: "Inter,sans-serif", fontSize: 16, color: "rgba(240,239,250,0.32)" }}>No movies available. Select a genre to start swiping.</p>
           </div>
         )}
+          </div>
+
+          {/* Chat side panel */}
+          <ChatPanel />
+        </div>
       </div>
     </div>
   );

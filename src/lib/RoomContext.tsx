@@ -10,15 +10,25 @@ interface RoomState {
   isConnected: boolean;
   isCreating: boolean;
   error: string | null;
+  messages: Array<{ id: string; participantId: string; participantName: string; text: string; createdAt: string }>;
+  inCall: boolean;
+  audioEnabled: boolean;
+  videoEnabled: boolean;
 }
 
 interface RoomContextValue extends RoomState {
-  createRoom: (name: string, roomName?: string, genre?: string) => Promise<void>;
+  createRoom: (name: string, roomName?: string) => Promise<void>;
   joinRoom: (roomId: string, name: string) => Promise<void>;
   startRoom: () => Promise<void>;
   swipe: (movieId: string | number, direction: "like" | "skip") => void;
+  addMovie: (movie: Room["movies"][number]) => void;
+  selectGenre: (genre: string) => void;
   leaveRoom: () => void;
   dismissError: () => void;
+  sendMessage: (text: string) => void;
+  setInCall: (v: boolean) => void;
+  setAudioEnabled: (v: boolean) => void;
+  setVideoEnabled: (v: boolean) => void;
 }
 
 const RoomContext = createContext<RoomContextValue | undefined>(undefined);
@@ -33,12 +43,16 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [messages, setMessages] = useState<RoomContextValue["messages"]>([]);
+  const [inCall, setInCall] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true);
 
-  const createRoom = useCallback(async (name: string, roomName?: string, genre?: string) => {
+  const createRoom = useCallback(async (name: string, roomName?: string) => {
     setIsCreating(true);
     setError(null);
     try {
-      const { room: newRoom } = await createRoomApi({ name: roomName, hostName: name, genre });
+      const { room: newRoom } = await createRoomApi({ name: roomName, hostName: name });
       setRoom(newRoom);
       setParticipantId(newRoom.hostId);
       setParticipantName(name || "Host");
@@ -77,8 +91,12 @@ export function RoomProvider({ children }: { children: ReactNode }) {
         );
       });
 
-      s.on("swipeUpdate", (data: { votes: Record<string, "like" | "skip"> }) => {
+      s.on("swipeUpdate", (data: { participantId: string; movieId: string | number; direction: "like" | "skip"; votes: Record<string, "like" | "skip"> }) => {
         // Could update UI to show other participants' votes
+      });
+
+      s.on("roomUpdated", (data: { room: Room }) => {
+        setRoom(data.room);
       });
 
       s.on("roomClosed", (data: { reason: string }) => {
@@ -88,6 +106,14 @@ export function RoomProvider({ children }: { children: ReactNode }) {
         setIsConnected(false);
         s.disconnect();
         setSocket(null);
+      });
+
+      s.on("chatMessage", (data: { id: string; participantId: string; participantName: string; text: string; createdAt: string }) => {
+        setMessages(prev => [...prev, data]);
+      });
+
+      s.on("genreSelected", (data: { room: Room }) => {
+        setRoom(data.room);
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create room");
@@ -108,11 +134,12 @@ export function RoomProvider({ children }: { children: ReactNode }) {
       setSocket(s);
       setIsConnected(true);
 
-      s.emit("joinRoom", { roomId, name }, (res: { error?: string; participantId?: string }) => {
+      s.emit("joinRoom", { roomId, name }, (res: { error?: string; participantId?: string; room?: Room }) => {
         if (res?.error) {
           setError(res.error);
-        } else if (res?.participantId) {
-          setParticipantId(res.participantId);
+        } else {
+          if (res?.room) setRoom(res.room);
+          if (res?.participantId) setParticipantId(res.participantId);
         }
       });
 
@@ -139,8 +166,12 @@ export function RoomProvider({ children }: { children: ReactNode }) {
         );
       });
 
-      s.on("swipeUpdate", (data: { votes: Record<string, "like" | "skip"> }) => {
+      s.on("swipeUpdate", (data: { participantId: string; movieId: string | number; direction: "like" | "skip"; votes: Record<string, "like" | "skip"> }) => {
         // Show partner's vote
+      });
+
+      s.on("roomUpdated", (data: { room: Room }) => {
+        setRoom(data.room);
       });
 
       s.on("roomClosed", (data: { reason: string }) => {
@@ -150,6 +181,14 @@ export function RoomProvider({ children }: { children: ReactNode }) {
         setIsConnected(false);
         s.disconnect();
         setSocket(null);
+      });
+
+      s.on("chatMessage", (data: { id: string; participantId: string; participantName: string; text: string; createdAt: string }) => {
+        setMessages(prev => [...prev, data]);
+      });
+
+      s.on("genreSelected", (data: { room: Room }) => {
+        setRoom(data.room);
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to join room");
@@ -169,6 +208,37 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     [room, socket, participantId]
   );
 
+  const addMovie = useCallback(
+    (movie: Room["movies"][number]) => {
+      if (!room || !socket) return;
+      socket.emit("addMovie", { roomId: room.id, movie });
+    },
+    [room, socket]
+  );
+
+  const selectGenre = useCallback(
+    (genre: string) => {
+      if (!room || !socket) return;
+      socket.emit("selectGenre", { roomId: room.id, genre });
+    },
+    [room, socket]
+  );
+
+  const sendMessage = useCallback(
+    (text: string) => {
+      if (!room || !socket || !participantId || !text.trim()) return;
+      const payload = {
+        roomId: room.id,
+        participantId,
+        participantName: participantName || "You",
+        text: text.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      socket.emit("chatMessage", payload);
+    },
+    [room, socket, participantId, participantName]
+  );
+
   const leaveRoom = useCallback(() => {
     if (socket && room) {
       socket.emit("leaveRoom", { roomId: room.id, participantId: participantId || "" });
@@ -178,6 +248,10 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     setParticipantId(null);
     setIsConnected(false);
     setSocket(null);
+    setMessages([]);
+    setInCall(false);
+    setAudioEnabled(true);
+    setVideoEnabled(true);
   }, [socket, room, participantId]);
 
   const dismissError = useCallback(() => setError(null), []);
@@ -193,8 +267,18 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     joinRoom: joinRoomViaSocket,
     startRoom,
     swipe,
+    addMovie,
+    selectGenre,
     leaveRoom,
     dismissError,
+    messages,
+    inCall,
+    audioEnabled,
+    videoEnabled,
+    sendMessage,
+    setInCall,
+    setAudioEnabled,
+    setVideoEnabled,
   };
 
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;
