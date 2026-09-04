@@ -54,7 +54,7 @@ function SwipeCard({
 }
 
 export function RoomScreen({ onBack }: { onBack: () => void }) {
-  const { room, swipe, sendMessage, selectGenre, messages, isConnected, participantId, participantName, leaveRoom } = useRoom();
+  const { room, swipe, sendMessage, selectGenre, shuffleMovies, messages, isConnected, participantId, participantName, leaveRoom } = useRoom();
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState<Movie | null>(null);
   const [copied, setCopied] = useState(false);
@@ -227,30 +227,56 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
             ) : matched ? (
-          <div style={{ textAlign: "center", padding: "48px 24px" }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 12, padding: "10px 28px",
-              borderRadius: 50, background: "linear-gradient(135deg,#7C3AED,#EC4899)",
-              color: "white", fontSize: 14, fontWeight: 800, fontFamily: "Inter,sans-serif",
-              boxShadow: "0 0 40px rgba(124,58,237,0.6)", marginBottom: 32
-            }}>
-              🎉 MATCH!
-            </div>
-            <div style={{ position: "relative", width: 220, height: 310, margin: "0 auto 24px", borderRadius: 24, overflow: "hidden", boxShadow: "0 0 60px rgba(244,63,94,0.3), 0 32px 64px rgba(0,0,0,0.6)" }}>
-              <img src={matched.img} alt={matched.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 50%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 16px" }}>
-                <p style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 16, color: "white", margin: 0 }}>{matched.title}</p>
+              <div style={{ textAlign: "center", padding: "48px 24px" }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 12, padding: "10px 28px",
+                  borderRadius: 50, background: "linear-gradient(135deg,#7C3AED,#EC4899)",
+                  color: "white", fontSize: 14, fontWeight: 800, fontFamily: "Inter,sans-serif",
+                  boxShadow: "0 0 40px rgba(124,58,237,0.6)", marginBottom: 32
+                }}>
+                  🎉 MATCH!
+                </div>
+                <div style={{ position: "relative", width: 220, height: 310, margin: "0 auto 24px", borderRadius: 24, overflow: "hidden", boxShadow: "0 0 60px rgba(244,63,94,0.3), 0 32px 64px rgba(0,0,0,0.6)" }}>
+                  <img src={matched.img} alt={matched.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 50%)" }} />
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 16px" }}>
+                    <p style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 16, color: "white", margin: 0 }}>{matched.title}</p>
+                  </div>
+                </div>
+                <p style={{
+                  fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#EF4444", margin: "0 0 8px"
+                }}>Everyone wants to watch {matched.title}!</p>
+                <p style={{
+                  fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(240,239,250,0.32)", margin: "0 0 24px"
+                }}>What do you want to do next?</p>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => alert(`Starting playback for: ${matched.title}`)}
+                    style={{
+                      padding: "12px 24px", borderRadius: 50,
+                      background: "linear-gradient(135deg,#B20710,#E50914)",
+                      border: "none", color: "white", fontFamily: "Inter,sans-serif",
+                      fontSize: 14, fontWeight: 700, cursor: "pointer",
+                      boxShadow: "0 0 24px rgba(229,9,20,0.4)"
+                    }}
+                  >
+                    Start Watching
+                  </button>
+                  <button
+                    onClick={() => { shuffleMovies(); setMatched(null); }}
+                    style={{
+                      padding: "12px 24px", borderRadius: 50,
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "rgba(240,239,250,0.7)", fontFamily: "Inter,sans-serif",
+                      fontSize: 14, fontWeight: 600, cursor: "pointer"
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            </div>
-            <p style={{
-              fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#EF4444", margin: "0 0 8px"
-            }}>Everyone wants to watch {matched.title}!</p>
-            <p style={{
-              fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(240,239,250,0.32)", margin: 0
-            }}>But no one's perfect. Keep swiping to find more matches.</p>
-          </div>
-        ) : movie ? (
+            ) : movie ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
             {/* Progress */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

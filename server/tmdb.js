@@ -83,7 +83,7 @@ export async function getRoomMovies(genre) {
     if (data.results && data.results.length > 0) {
       return data.results
         .filter((m) => m.poster_path)
-        .slice(0, 15)
+        .slice(0, 40)
         .map((m, idx) => transformMovie(m, idx));
     }
   } catch (err) {

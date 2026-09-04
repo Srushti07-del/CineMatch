@@ -79,34 +79,31 @@ export class RoomStore {
 
   recordSwipe(roomId, participantId, movieId, direction) {
     const room = this.rooms.get(roomId);
-    if (!room) return null;
+    if (!room || !room.movies || room.movies.length === 0) return null;
     if (!room.votes) room.votes = {};
     if (!room.votes[movieId]) room.votes[movieId] = {};
     room.votes[movieId][participantId] = direction;
     room.updatedAt = new Date().toISOString();
 
     const currentMovieId = room.movies[room.currentMovieIndex]?.id;
-    const votes = room.votes[currentMovieId] || {};
-    const allVoted =
+    const currentVotes = room.votes[currentMovieId] || {};
+    const allVotedCurrent =
       room.participants.length > 0 &&
-      room.participants.every(p => votes[p.id] !== undefined);
+      room.participants.every(p => currentVotes[p.id] !== undefined);
 
-    if (allVoted) {
-      const likes = room.participants.filter(p => votes[p.id] === "like");
+    let matchedMovie = null;
+    if (allVotedCurrent) {
+      const likes = room.participants.filter(p => currentVotes[p.id] === "like");
       if (likes.length === room.participants.length && currentMovieId) {
-        const matchedMovie = room.movies[room.currentMovieIndex];
+        matchedMovie = room.movies[room.currentMovieIndex];
         room.matches.push(matchedMovie);
         room.status = "matched";
-        room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
-        room.votes = {};
-        return { room, matchedMovie, allVoted: true };
-      } else {
-        room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
-        room.votes = {};
-        return { room, allVoted: true };
       }
+      room.votes = {};
     }
-    return { room, allVoted: false };
+
+    room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
+    return { room, matchedMovie, allVoted: allVotedCurrent };
   }
 
   deleteRoom(roomId, reason = "manual") {

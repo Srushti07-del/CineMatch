@@ -104,7 +104,7 @@ io.on("connection", (socket) => {
       return;
     }
     const { room, matchedMovie, allVoted } = result;
-    const votesIdx = Math.max(0, room.currentMovieIndex - (allVoted ? 1 : 0));
+    const votesIdx = (room.currentMovieIndex - 1 + room.movies.length) % room.movies.length;
     const currentMovieId = room.movies[votesIdx]?.id;
 
     const votes = room.votes[currentMovieId] || {};
@@ -142,8 +142,26 @@ io.on("connection", (socket) => {
     const movies = await getRoomMovies(genre);
     room.movies = movies;
     room.genre = genre;
+    room.currentMovieIndex = 0;
+    room.votes = {};
+    room.status = "waiting";
     room.updatedAt = new Date().toISOString();
     io.to(`room:${roomId}`).emit("genreSelected", { room });
+  });
+
+  socket.on("shuffleMovies", async ({ roomId }) => {
+    const room = store.getRoom(roomId);
+    if (!room || !room.genre) {
+      socket.emit("roomClosed", { reason: "Room no longer exists" });
+      return;
+    }
+    const movies = await getRoomMovies(room.genre);
+    room.movies = movies;
+    room.currentMovieIndex = 0;
+    room.votes = {};
+    room.status = "waiting";
+    room.updatedAt = new Date().toISOString();
+    io.to(`room:${roomId}`).emit("roomUpdated", { room });
   });
 
   socket.on("disconnect", () => {

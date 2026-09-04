@@ -23,6 +23,7 @@ interface RoomContextValue extends RoomState {
   swipe: (movieId: string | number, direction: "like" | "skip") => void;
   addMovie: (movie: Room["movies"][number]) => void;
   selectGenre: (genre: string) => void;
+  shuffleMovies: () => void;
   leaveRoom: () => void;
   dismissError: () => void;
   sendMessage: (text: string) => void;
@@ -224,6 +225,11 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     [room, socket]
   );
 
+  const shuffleMovies = useCallback(() => {
+    if (!room || !socket) return;
+    socket.emit("shuffleMovies", { roomId: room.id });
+  }, [room, socket]);
+
   const sendMessage = useCallback(
     (text: string) => {
       if (!room || !socket || !participantId || !text.trim()) return;
@@ -269,6 +275,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     swipe,
     addMovie,
     selectGenre,
+    shuffleMovies,
     leaveRoom,
     dismissError,
     messages,
