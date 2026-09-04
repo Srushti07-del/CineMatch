@@ -57,6 +57,16 @@ io.on("connection", (socket) => {
       cb && cb({ error: "Room not found" });
       return;
     }
+
+    const existing = room.participants.find(p => p.name === (name || "").trim());
+    if (existing) {
+      socket.join(`room:${roomId}`);
+      socket.data.roomId = roomId;
+      socket.data.participantId = existing.id;
+      cb && cb({ room, participantId: existing.id });
+      return;
+    }
+
     const result = store.addParticipant(roomId, { name });
     if (!result) {
       cb && cb({ error: "Failed to join room" });
@@ -72,6 +82,14 @@ io.on("connection", (socket) => {
 
     cb && cb({ room: updatedRoom, participantId });
     socket.to(`room:${roomId}`).emit("participantJoined", { participant });
+  });
+
+  socket.on("hostJoin", ({ roomId, participantId }) => {
+    const room = store.getRoom(roomId);
+    if (!room) return;
+    socket.join(`room:${roomId}`);
+    socket.data.roomId = roomId;
+    socket.data.participantId = participantId;
   });
 
   socket.on("leaveRoom", ({ roomId, participantId }) => {

@@ -63,11 +63,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
       setSocket(s);
       setIsConnected(true);
 
-      s.emit("joinRoom", { roomId: newRoom.id, name: name || "Host" }, (res: { error?: string }) => {
-        if (res?.error) {
-          setError(res.error);
-        }
-      });
+      s.emit("hostJoin", { roomId: newRoom.id, participantId: newRoom.hostId });
 
       s.on("participantJoined", (data: { participant: Participant }) => {
         setRoom(prev =>
