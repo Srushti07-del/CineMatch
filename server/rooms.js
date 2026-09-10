@@ -85,25 +85,27 @@ export class RoomStore {
     room.votes[movieId][participantId] = direction;
     room.updatedAt = new Date().toISOString();
 
-    const currentMovieId = room.movies[room.currentMovieIndex]?.id;
-    const currentVotes = room.votes[currentMovieId] || {};
-    const allVotedCurrent =
+    // Check if ALL participants have voted on THIS specific movie
+    const movieVotes = room.votes[movieId] || {};
+    const allVotedOnThisMovie =
       room.participants.length > 0 &&
-      room.participants.every(p => currentVotes[p.id] !== undefined);
+      room.participants.every(p => movieVotes[p.id] !== undefined);
 
     let matchedMovie = null;
-    if (allVotedCurrent) {
-      const likes = room.participants.filter(p => currentVotes[p.id] === "like");
-      if (likes.length === room.participants.length && currentMovieId) {
-        matchedMovie = room.movies[room.currentMovieIndex];
+    if (allVotedOnThisMovie) {
+      const likes = room.participants.filter(p => movieVotes[p.id] === "like");
+      const movie = room.movies.find(m => String(m.id) === String(movieId));
+      if (likes.length === room.participants.length && movie) {
+        matchedMovie = movie;
         room.matches.push(matchedMovie);
         room.status = "matched";
       }
-      room.votes = {};
+      // Clear votes for this movie only (not all votes)
+      delete room.votes[movieId];
     }
 
-    room.currentMovieIndex = (room.currentMovieIndex + 1) % room.movies.length;
-    return { room, matchedMovie, allVoted: allVotedCurrent };
+    // Do NOT advance room.currentMovieIndex — each client tracks its own position
+    return { room, matchedMovie, allVoted: allVotedOnThisMovie, movieId };
   }
 
   deleteRoom(roomId, reason = "manual") {

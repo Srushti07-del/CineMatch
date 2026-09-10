@@ -9,6 +9,7 @@ export interface Movie {
   backdropImg?: string;
   overview?: string;
   tags?: string[];
+  trailerUrl?: string;
 }
 
 export interface Participant {

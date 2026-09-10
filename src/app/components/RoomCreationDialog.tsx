@@ -4,7 +4,7 @@ import { useRoom } from "@/lib/RoomContext";
 
 export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean }) {
   const { createRoom, joinRoom, isCreating, error, room, dismissError } = useRoom();
-  const [step, setStep] = useState<"form" | "room">(preloadedRoomId || joinMode ? "join" : "form");
+  const [step, setStep] = useState<"form" | "join" | "room">(preloadedRoomId || joinMode ? "join" : "form");
   const [name, setName] = useState("");
   const [roomName, setRoomName] = useState("");
   const [roomCode, setRoomCode] = useState(preloadedRoomId || "");

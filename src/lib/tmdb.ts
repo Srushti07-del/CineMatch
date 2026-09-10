@@ -222,3 +222,129 @@ export async function searchMovies(query: string, page = 1): Promise<Movie[]> {
     return [];
   }
 }
+
+interface TmdbVideo {
+  key: string;
+  site: string;
+  type: string;
+  official: boolean;
+}
+
+/**
+ * Fetches the YouTube trailer URL for a movie from TMDB.
+ * Returns the embed URL (https://www.youtube.com/embed/KEY) or null if none found.
+ */
+export async function fetchMovieTrailerUrl(movieId: number | string): Promise<string | null> {
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/movie/${movieId}/videos?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const videos: TmdbVideo[] = data.results || [];
+
+    // Prefer official YouTube trailers, then teasers, then any YouTube video
+    const officialTrailer = videos.find(
+      (v) => v.site === "YouTube" && v.type === "Trailer" && v.official
+    );
+    const anyTrailer = videos.find(
+      (v) => v.site === "YouTube" && v.type === "Trailer"
+    );
+    const teaser = videos.find(
+      (v) => v.site === "YouTube" && v.type === "Teaser"
+    );
+    const anyYoutube = videos.find((v) => v.site === "YouTube");
+
+    const chosen = officialTrailer || anyTrailer || teaser || anyYoutube;
+    if (chosen) {
+      return `https://www.youtube.com/embed/${chosen.key}`;
+    }
+    return null;
+  } catch (err) {
+    console.warn("[TMDB] fetchMovieTrailerUrl failed:", err);
+    return null;
+  }
+}
+
+export interface WatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
+export interface WatchProvidersResult {
+  link?: string;
+  flatrate?: WatchProvider[];
+  rent?: WatchProvider[];
+  buy?: WatchProvider[];
+  free?: WatchProvider[];
+}
+
+export async function fetchWatchProviders(movieId: number | string): Promise<WatchProvidersResult | null> {
+  try {
+    const res = await fetch(`${TMDB_BASE_URL}/movie/${movieId}/watch/providers?api_key=${TMDB_API_KEY}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const results = data.results || {};
+    const localeData = (results.US || results.IN || results.GB || Object.values(results)[0]) as any;
+    if (!localeData) return null;
+
+    return {
+      link: localeData.link,
+      flatrate: localeData.flatrate || [],
+      rent: localeData.rent || [],
+      buy: localeData.buy || [],
+      free: localeData.free || [],
+    };
+  } catch (err) {
+    console.warn("[TMDB] fetchWatchProviders failed:", err);
+    return null;
+  }
+}
+
+export async function resolveTmdbId(movieId: number | string, title?: string): Promise<number | null> {
+  const numId = typeof movieId === "number" ? movieId : parseInt(movieId, 10);
+  if (!isNaN(numId) && numId > 100) {
+    return numId;
+  }
+  if (title) {
+    const results = await searchMovies(title);
+    if (results.length > 0 && typeof results[0].id === "number") {
+      return results[0].id;
+    }
+  }
+  return !isNaN(numId) ? numId : null;
+}
+
+export interface StreamServer {
+  id: string;
+  name: string;
+  badge: string;
+  getUrl: (tmdbId: number | string) => string;
+}
+
+export const MOVIE_STREAM_SERVERS: StreamServer[] = [
+  {
+    id: "vidsrc-pm",
+    name: "Server 1",
+    badge: "HD · Fast",
+    getUrl: (id) => `https://vidsrc.pm/embed/movie/${id}`,
+  },
+  {
+    id: "autoembed",
+    name: "Server 2",
+    badge: "Auto Player",
+    getUrl: (id) => `https://autoembed.co/movie/tmdb/${id}`,
+  },
+  {
+    id: "123embed",
+    name: "Server 3",
+    badge: "MultiStream",
+    getUrl: (id) => `https://play2.123embed.net/movie/${id}`,
+  },
+  {
+    id: "2embed",
+    name: "Server 4",
+    badge: "Backup HD",
+    getUrl: (id) => `https://2embed.skin/embed/${id}`,
+  },
+];
+

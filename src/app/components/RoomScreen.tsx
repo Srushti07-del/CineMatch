@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Heart, X, Copy, Check, ChevronLeft, Wifi, WifiOff, Users } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
-import type { Movie } from "../../shared/types";
+import type { Movie } from "../../../shared/types";
 import { ChatPanel } from "./ChatPanel";
+import { WatchScreen } from "./WatchScreen";
 
 function SwipeCard({
   movie,
@@ -26,7 +27,7 @@ function SwipeCard({
 
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 28px" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-          {movie.tags?.map(t => (
+          {movie.tags?.map((t: string) => (
             <span key={t} style={{ padding: "3px 10px", borderRadius: 50, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 600, fontFamily: "Inter,sans-serif" }}>{t}</span>
           ))}
         </div>
@@ -57,12 +58,40 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
   const { room, swipe, sendMessage, selectGenre, shuffleMovies, messages, isConnected, participantId, participantName, leaveRoom } = useRoom();
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState<Movie | null>(null);
+  const [watchMovie, setWatchMovie] = useState<Movie | null>(null);
   const [copied, setCopied] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  // Each participant tracks their OWN card index independently
+  const [localMovieIndex, setLocalMovieIndex] = useState(0);
+  const prevMoviesRef = useRef<string>("");
+
+  // Render WatchScreen when a movie is selected to watch
+  if (watchMovie) {
+    return <WatchScreen onBack={() => setWatchMovie(null)} movie={watchMovie} />;
+  }
+
+  // Reset local index when movies list changes (genre selected, shuffle, etc.)
+  useEffect(() => {
+    const moviesKey = room?.movies?.map((m: Movie) => m.id).join(",") || "";
+    if (moviesKey && moviesKey !== prevMoviesRef.current) {
+      prevMoviesRef.current = moviesKey;
+      setLocalMovieIndex(0);
+      setMatched(null);
+    }
+  }, [room?.movies]);
+
+  // Detect match from room state (when server broadcasts matchFound)
+  useEffect(() => {
+    if (room?.status === "matched" && room.matches.length > 0) {
+      const latestMatch = room.matches[room.matches.length - 1];
+      setMatched(latestMatch);
+    }
+  }, [room?.status, room?.matches?.length]);
 
   if (!room) return null;
 
-  const movie = room.movies?.[room.currentMovieIndex];
+  // Use LOCAL index, not room.currentMovieIndex
+  const movie = room.movies?.[localMovieIndex];
 
   const handleGenreSelect = (genre: string) => {
     setSelectedGenre(genre);
@@ -72,9 +101,13 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
   const handleSwipe = (direction: "left" | "right") => {
     if (dir || !movie || !isConnected) return;
     setDir(direction);
-    swipe(movie.id, direction);
+    // Map UI direction to server direction: right=like, left=skip
+    const serverDirection = direction === "right" ? "like" : "skip";
+    swipe(movie.id, serverDirection);
     setTimeout(() => {
       setDir(null);
+      // Advance LOCAL index only — doesn't affect other participants
+      setLocalMovieIndex(prev => (prev + 1) % (room.movies?.length || 1));
     }, 480);
   };
 
@@ -121,7 +154,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              {room.participants.map((p, i) => (
+              {room.participants.map((p: { id: string; name: string }, i: number) => (
                 <div key={p.id} style={{
                   width: 32, height: 32, borderRadius: "50%", border: "2px solid #06060A",
                   background: `hsl(${i * 52 + 240},58%,44%)`,
@@ -230,9 +263,9 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
               <div style={{ textAlign: "center", padding: "48px 24px" }}>
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 12, padding: "10px 28px",
-                  borderRadius: 50, background: "linear-gradient(135deg,#7C3AED,#EC4899)",
+                  borderRadius: 50, background: "linear-gradient(135deg,#B20710,#E50914)",
                   color: "white", fontSize: 14, fontWeight: 800, fontFamily: "Inter,sans-serif",
-                  boxShadow: "0 0 40px rgba(124,58,237,0.6)", marginBottom: 32
+                  boxShadow: "0 0 40px rgba(229,9,20,0.6)", marginBottom: 32
                 }}>
                   🎉 MATCH!
                 </div>
@@ -244,21 +277,24 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
                 <p style={{
-                  fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#EF4444", margin: "0 0 8px"
+                  fontFamily: "Manrope,sans-serif", fontSize: 18, fontWeight: 800, color: "#E50914", margin: "0 0 8px"
                 }}>Everyone wants to watch {matched.title}!</p>
                 <p style={{
                   fontFamily: "Inter,sans-serif", fontSize: 14, color: "rgba(240,239,250,0.32)", margin: "0 0 24px"
                 }}>What do you want to do next?</p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <button
-                    onClick={() => alert(`Starting playback for: ${matched.title}`)}
+                    onClick={() => setWatchMovie(matched)}
                     style={{
                       padding: "12px 24px", borderRadius: 50,
                       background: "linear-gradient(135deg,#B20710,#E50914)",
                       border: "none", color: "white", fontFamily: "Inter,sans-serif",
                       fontSize: 14, fontWeight: 700, cursor: "pointer",
-                      boxShadow: "0 0 24px rgba(229,9,20,0.4)"
+                      boxShadow: "0 0 24px rgba(229,9,20,0.4)",
+                      transition: "all 0.2s ease"
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.7)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 24px rgba(229,9,20,0.4)"; }}
                   >
                     Start Watching
                   </button>
@@ -269,8 +305,11 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
                       background: "rgba(255,255,255,0.04)",
                       border: "1px solid rgba(255,255,255,0.08)",
                       color: "rgba(240,239,250,0.7)", fontFamily: "Inter,sans-serif",
-                      fontSize: 14, fontWeight: 600, cursor: "pointer"
+                      fontSize: 14, fontWeight: 600, cursor: "pointer",
+                      transition: "all 0.2s ease"
                     }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.2)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "none"; }}
                   >
                     Cancel
                   </button>
@@ -280,18 +319,18 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
             {/* Progress */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {room.movies?.slice(0, Math.min(room.currentMovieIndex + 1, room.movies.length)).map((_, i) => (
+              {room.movies?.slice(0, Math.min(localMovieIndex + 1, room.movies.length)).map((_: Movie, i: number) => (
                 <div key={i} style={{
                   height: 4, borderRadius: 2, transition: "all 0.4s ease",
-                  width: i === room.currentMovieIndex % (room.movies.length || 1) ? 24 : 8,
-                  background: i < room.currentMovieIndex % (room.movies.length || 1) ? "#F59E0B" : i === room.currentMovieIndex % (room.movies.length || 1) ? "#EC4899" : "rgba(255,255,255,0.14)"
+                  width: i === localMovieIndex % (room.movies.length || 1) ? 24 : 8,
+                  background: i < localMovieIndex % (room.movies.length || 1) ? "#F59E0B" : i === localMovieIndex % (room.movies.length || 1) ? "#EC4899" : "rgba(255,255,255,0.14)"
                 }} />
               ))}
             </div>
 
             {/* Card stack */}
             <div style={{ position: "relative", width: 340, height: 460 }}>
-              {(room.currentMovieIndex + 1) % (room.movies?.length || 1) !== 0 && (
+              {(localMovieIndex + 1) % (room.movies?.length || 1) !== 0 && (
                 <div style={{ position: "absolute", inset: 0, top: 14, left: 12, right: 12, borderRadius: 28, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)", transform: "scale(0.95) translateY(8px)", zIndex: 0 }} />
               )}
               <SwipeCard movie={movie} direction={dir} />
@@ -327,7 +366,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
               <span style={{
                 fontFamily: "Inter,sans-serif", fontSize: 12, color: "rgba(240,239,250,0.28)",
                 width: 60, textAlign: "center"
-              }}>{(room.currentMovieIndex % (room.movies?.length || 1)) + 1} / {room.movies?.length || 0}</span>
+              }}>{(localMovieIndex % (room.movies?.length || 1)) + 1} / {room.movies?.length || 0}</span>
               <button
                 onClick={() => handleSwipe("right")}
                 disabled={!!dir || !isConnected}

@@ -122,18 +122,14 @@ io.on("connection", (socket) => {
       return;
     }
     const { room, matchedMovie, allVoted } = result;
-    const votesIdx = (room.currentMovieIndex - 1 + room.movies.length) % room.movies.length;
-    const currentMovieId = room.movies[votesIdx]?.id;
 
-    const votes = room.votes[currentMovieId] || {};
+    // Notify all participants about this swipe (for vote indicators)
+    // but do NOT send roomUpdated — each client tracks their own card index
     io.to(`room:${roomId}`).emit("swipeUpdate", {
       participantId,
       movieId,
       direction,
-      votes: { ...votes },
     });
-
-    io.to(`room:${roomId}`).emit("roomUpdated", { room });
 
     if (allVoted && matchedMovie) {
       io.to(`room:${roomId}`).emit("matchFound", { movie: matchedMovie, votes: {} });
@@ -173,7 +169,8 @@ io.on("connection", (socket) => {
       socket.emit("roomClosed", { reason: "Room no longer exists" });
       return;
     }
-    const movies = await getRoomMovies(room.genre);
+    const excludeIds = room.movies.map((m) => String(m.id));
+    const movies = await getRoomMovies(room.genre, excludeIds);
     room.movies = movies;
     room.currentMovieIndex = 0;
     room.votes = {};

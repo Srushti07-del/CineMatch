@@ -1,4 +1,4 @@
-import type { CreateRoomRequest, CreateRoomResponse, JoinRoomResponse } from "../shared/types";
+import type { CreateRoomRequest, CreateRoomResponse, JoinRoomResponse } from "../../shared/types";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 

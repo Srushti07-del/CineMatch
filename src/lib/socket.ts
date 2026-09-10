@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-export type { SocketEvents } from "../shared/types";
+export type { SocketEvents } from "../../shared/types";
 
 let socket: Socket | null = null;
 
