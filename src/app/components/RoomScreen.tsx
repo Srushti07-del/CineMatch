@@ -59,6 +59,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState<Movie | null>(null);
   const [watchMovie, setWatchMovie] = useState<Movie | null>(null);
+  const [watchMode, setWatchMode] = useState<"movie" | "trailer">("movie");
   const [copied, setCopied] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   // Each participant tracks their OWN card index independently
@@ -67,7 +68,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
 
   // Render WatchScreen when a movie is selected to watch
   if (watchMovie) {
-    return <WatchScreen onBack={() => setWatchMovie(null)} movie={watchMovie} />;
+    return <WatchScreen onBack={() => setWatchMovie(null)} movie={watchMovie} initialPlayMode={watchMode} />;
   }
 
   // Reset local index when movies list changes (genre selected, shuffle, etc.)
@@ -284,7 +285,7 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
                 }}>What do you want to do next?</p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <button
-                    onClick={() => setWatchMovie(matched)}
+                    onClick={() => { setWatchMode("movie"); setWatchMovie(matched); }}
                     style={{
                       padding: "12px 24px", borderRadius: 50,
                       background: "linear-gradient(135deg,#B20710,#E50914)",
@@ -297,6 +298,21 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
                     onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 24px rgba(229,9,20,0.4)"; }}
                   >
                     Start Watching
+                  </button>
+                  <button
+                    onClick={() => { setWatchMode("trailer"); setWatchMovie(matched); }}
+                    style={{
+                      padding: "12px 24px", borderRadius: 50,
+                      background: "linear-gradient(135deg,#7C3AED,#EC4899)",
+                      border: "none", color: "white", fontFamily: "Inter,sans-serif",
+                      fontSize: 14, fontWeight: 700, cursor: "pointer",
+                      boxShadow: "0 0 24px rgba(124,58,237,0.4)",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(124,58,237,0.7)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 0 24px rgba(124,58,237,0.4)"; }}
+                  >
+                    Watch Trailer
                   </button>
                   <button
                     onClick={() => { shuffleMovies(); setMatched(null); }}
@@ -319,13 +335,19 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
             {/* Progress */}
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {room.movies?.slice(0, Math.min(localMovieIndex + 1, room.movies.length)).map((_: Movie, i: number) => (
-                <div key={i} style={{
-                  height: 4, borderRadius: 2, transition: "all 0.4s ease",
-                  width: i === localMovieIndex % (room.movies.length || 1) ? 24 : 8,
-                  background: i < localMovieIndex % (room.movies.length || 1) ? "#F59E0B" : i === localMovieIndex % (room.movies.length || 1) ? "#EC4899" : "rgba(255,255,255,0.14)"
-                }} />
-              ))}
+              {Array.from({ length: Math.min(room.movies?.length || 0, 12) }).map((_, i) => {
+                const total = room.movies?.length || 1;
+                const current = localMovieIndex % total;
+                const dotIndex = Math.floor((i + 1) * total / Math.min(total, 12));
+                const isActive = current >= Math.floor(i * total / Math.min(total, 12)) && current < dotIndex;
+                return (
+                  <div key={i} style={{
+                    height: 4, borderRadius: 2, transition: "all 0.4s ease",
+                    width: isActive ? 24 : 8,
+                    background: isActive ? "#EC4899" : "rgba(255,255,255,0.14)"
+                  }} />
+                );
+              })}
             </div>
 
             {/* Card stack */}

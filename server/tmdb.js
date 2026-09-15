@@ -74,19 +74,26 @@ export async function getRoomMovies(genre, excludeIds = []) {
     let url = `${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}`;
     if (genre && GENRE_NAME_TO_ID[genre]) {
       const genreId = GENRE_NAME_TO_ID[genre];
-      const page = Math.floor(Math.random() * 5) + 1;
-      url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc&vote_count.gte=100&page=${page}`;
+      url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=vote_average.desc&vote_count.gte=50&page=1`;
     }
 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`);
     const data = await res.json();
     if (data.results && data.results.length > 0) {
-      return data.results
+      const movies = data.results
         .filter((m) => m.poster_path)
         .filter((m) => !excludeIds.includes(String(m.id)))
-        .slice(0, 40)
         .map((m, idx) => transformMovie(m, idx));
+
+      if (genre && GENRE_NAME_TO_ID[genre]) {
+        const genreName = genre;
+        return movies
+          .filter((m) => m.genre.includes(genreName) || m.tags?.includes(genreName))
+          .slice(0, 120);
+      }
+
+      return movies.slice(0, 120);
     }
   } catch (err) {
     console.warn("[server/tmdb] Failed to fetch TMDB movies, using fallback:", err.message);

@@ -27,9 +27,9 @@ import {
 
 type PlayMode = "movie" | "trailer";
 
-export function WatchScreen({ onBack, movie }: { onBack: () => void; movie: Movie }) {
+export function WatchScreen({ onBack, movie, initialPlayMode = "movie" }: { onBack: () => void; movie: Movie; initialPlayMode?: PlayMode }) {
   const { leaveRoom } = useRoom();
-  const [playMode, setPlayMode] = useState<PlayMode>("movie");
+  const [playMode, setPlayMode] = useState<PlayMode>(initialPlayMode);
   const [selectedServer, setSelectedServer] = useState<StreamServer>(MOVIE_STREAM_SERVERS[0]);
   const [resolvedId, setResolvedId] = useState<number | null>(
     typeof movie.id === "number" && movie.id > 100 ? movie.id : null
