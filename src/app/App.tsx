@@ -3,6 +3,7 @@ import { Heart, X, ChevronRight, Star, Film, Play, Check, Users, Loader2, Search
 import { useRoom } from "@/lib/RoomContext";
 import { RoomCreationDialog } from "@/app/components/RoomCreationDialog";
 import { RoomScreen } from "@/app/components/RoomScreen";
+import { AuthModal } from "@/app/components/AuthModal";
 import { fetchTrendingMovies, fetchMoviesByGenre, searchMovies } from "@/lib/tmdb";
 import type { Movie } from "../../shared/types";
 
@@ -10,21 +11,7 @@ import type { Movie } from "../../shared/types";
 // DATA
 // ─────────────────────────────────────────────
 
-const HERO_POSTERS = [
-  { img: "https://images.unsplash.com/photo-1608889176697-f9b4c77ddb9e?w=300&h=450&fit=crop&auto=format", title: "The Dark Knight", genre: "Action" },
-  { img: "https://images.unsplash.com/photo-1533488765986-dfa2a9939acd?w=300&h=450&fit=crop&auto=format", title: "Interstellar", genre: "Sci-Fi" },
-  { img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=450&fit=crop&auto=format", title: "La La Land", genre: "Romance" },
-  { img: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=300&h=450&fit=crop&auto=format", title: "Oppenheimer", genre: "Drama" },
-  { img: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=300&h=450&fit=crop&auto=format", title: "Dune", genre: "Sci-Fi" },
-];
-
-const POSTER_CONFIGS = [
-  { rotation: -16, tx: -96, ty: 18, scale: 0.8, zIndex: 1 },
-  { rotation: -8,  tx: -48, ty: -12, scale: 0.88, zIndex: 2 },
-  { rotation:  0,  tx:   0, ty:   0, scale: 1,    zIndex: 5 },
-  { rotation:  8,  tx:  48, ty: -8,  scale: 0.88, zIndex: 3 },
-  { rotation: 15,  tx:  96, ty: 18, scale: 0.8,  zIndex: 2 },
-];
+const CAROUSEL_MOVIE_COUNT = 10;
 
 const SWIPE_MOVIES = [
   { id: 1, title: "Dune: Part Two",        genre: "Sci-Fi · Adventure", year: 2024, rating: 8.6, matchPct: 92, img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=380&h=540&fit=crop&auto=format", tags: ["Epic", "Visually Stunning", "Sci-Fi"] },
@@ -104,6 +91,39 @@ const STYLES = `
   }
   .spin { animation: spin 0.9s linear infinite; }
 
+  @keyframes carousel-glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.7; }
+  }
+  .carousel-wrapper {
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+  }
+  .carousel-ring {
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .carousel-card {
+    position: absolute;
+    backface-visibility: hidden;
+    transition: filter 0.5s ease, opacity 0.5s ease, box-shadow 0.4s ease, transform 0.35s cubic-bezier(0.22,1,0.36,1);
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #0c0c12;
+  }
+  .carousel-card:hover {
+    z-index: 100 !important;
+    box-shadow: 0 50px 100px rgba(0,0,0,0.8), 0 0 80px rgba(229,9,20,0.45), inset 0 0 0 1px rgba(255,255,255,0.12) !important;
+  }
+  .carousel-card .card-overlay {
+    transition: opacity 0.35s ease;
+  }
+  .carousel-card:hover .card-overlay {
+    opacity: 1 !important;
+  }
+
   .hiw-flow { display: flex; align-items: stretch; }
   .hiw-card { flex: 1 1 0; min-width: 0; }
   .hiw-arrow { flex: 0 0 64px; display: flex; align-items: center; justify-content: center; color: #E50914; }
@@ -171,7 +191,7 @@ function Grain() {
 // NAVBAR
 // ─────────────────────────────────────────────
 
-function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowItWorks }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void; onSeeHowItWorks: () => void }) {
+function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowItWorks, onOpenAuth, user, onLogOut }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void; onSeeHowItWorks: () => void; onOpenAuth: () => void; user: { displayName: string; email: string } | null; onLogOut: () => void; }) {
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
@@ -200,9 +220,41 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowI
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}
               onClick={e => { e.preventDefault(); l === "How It Works" && onSeeHowItWorks(); }}>{l}</a>
           ))}
-          <a href="#" style={{ fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 500, color: "rgba(240,239,250,0.5)", textDecoration: "none", transition: "color 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#F0EFFA")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}>Log In</a>
+          {user ? (
+            <div style={{ position: "relative" }}>
+              <button
+                style={{ background: "none", border: "none", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 600, color: "white" }}
+                onMouseEnter={e => {
+                  const dropdown = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (dropdown) dropdown.style.display = "block";
+                }}
+              >
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#B20710,#E50914)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>
+                  {user.displayName.charAt(0).toUpperCase()}
+                </div>
+                {user.displayName}
+              </button>
+              <div
+                style={{
+                  display: "none", position: "absolute", top: "100%", right: 0, marginTop: 8,
+                  background: "rgba(10,10,14,0.95)", border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 12, padding: "8px 0", minWidth: 160,
+                  boxShadow: "0 10px 32px rgba(0,0,0,0.8)", backdropFilter: "blur(16px)"
+                }}
+                onMouseLeave={e => { e.currentTarget.style.display = "none"; }}
+                onMouseEnter={e => { e.currentTarget.style.display = "block"; }}
+              >
+                <button style={{ width: "100%", padding: "10px 16px", background: "none", border: "none", color: "rgba(240,239,250,0.8)", textAlign: "left", fontFamily: "Inter,sans-serif", fontSize: 14, cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>Profile</button>
+                <button onClick={onLogOut} style={{ width: "100%", padding: "10px 16px", background: "none", border: "none", color: "#ff8b94", textAlign: "left", fontFamily: "Inter,sans-serif", fontSize: 14, cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(229,9,20,0.1)"} onMouseLeave={e => e.currentTarget.style.background = "none"}>Log Out</button>
+              </div>
+            </div>
+          ) : (
+            <a href="#" style={{ fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 500, color: "rgba(240,239,250,0.5)", textDecoration: "none", transition: "color 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#F0EFFA")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,239,250,0.5)")}
+              onClick={e => { e.preventDefault(); onOpenAuth(); }}
+            >Log In</a>
+          )}
         </div>
 
         {/* CTA */}
@@ -242,108 +294,201 @@ function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowI
 // HERO
 // ─────────────────────────────────────────────
 
-function PosterStack({ mx, my, onSelectMovie }: { mx: number; my: number; onSelectMovie: (m: Movie) => void }) {
-  const [posters, setPosters] = useState<Movie[]>([]);
+function MovieCarousel3D({ onSelectMovie }: { onSelectMovie: (m: Movie) => void }) {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [rotation, setRotation] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const animRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
+  const rotationRef = useRef(0);
 
   useEffect(() => {
-    fetchTrendingMovies("week").then((movies) => {
-      if (movies && movies.length >= 5) {
-        setPosters(movies.slice(0, 5));
+    fetchTrendingMovies("week").then((m) => {
+      if (m && m.length >= CAROUSEL_MOVIE_COUNT) {
+        setMovies(m.slice(0, CAROUSEL_MOVIE_COUNT));
+      } else if (m && m.length > 0) {
+        setMovies(m);
       }
     });
   }, []);
 
-  if (posters.length < 5) return null;
+  // Continuous auto-rotation
+  useEffect(() => {
+    const speed = 0.012; // degrees per ms
+    const animate = (time: number) => {
+      if (lastTimeRef.current === 0) lastTimeRef.current = time;
+      const dt = time - lastTimeRef.current;
+      lastTimeRef.current = time;
+      if (!isPaused) {
+        rotationRef.current = (rotationRef.current + speed * dt) % 360;
+        setRotation(rotationRef.current);
+      }
+      animRef.current = requestAnimationFrame(animate);
+    };
+    animRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [isPaused]);
 
-  const main = posters[0];
-  const behind = posters.slice(1, 5);
+  if (movies.length === 0) {
+    // Loading shimmer placeholder
+    return (
+      <div style={{ width: 500, height: 520, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 200, height: 300, borderRadius: 20, background: "linear-gradient(135deg, rgba(229,9,20,0.08), rgba(255,255,255,0.03))", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)", animation: "shimmer-slide 1.8s infinite" }} />
+        </div>
+      </div>
+    );
+  }
 
-  const BACK = [
-    { rot: -10, tx: -62,  ty: 8,  tz: -50,  scale: 0.92, z: 4, opacity: 0.55 },
-    { rot: 10,  tx: 62,   ty: 8,  tz: -50,  scale: 0.92, z: 3, opacity: 0.55 },
-    { rot: -18, tx: -118, ty: 18, tz: -110, scale: 0.82, z: 2, opacity: 0.38 },
-    { rot: 18,  tx: 118,  ty: 18, tz: -110, scale: 0.82, z: 1, opacity: 0.38 },
-  ];
+  const count = movies.length;
+  const cardW = 200;
+  const cardH = 300;
+  // Radius of the carousel ring — fits cards nicely
+  const radius = Math.max(320, (cardW * count) / (2 * Math.PI) + 40);
+  const angleStep = 360 / count;
 
   return (
-    <div style={{ position: "relative", width: 460, height: 560, perspective: 1200 }}>
-      {/* Subtle red/orange ambient glow */}
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 340, height: 460, borderRadius: 24, background: "radial-gradient(circle, rgba(229,9,20,0.18) 0%, rgba(249,115,22,0.1) 45%, transparent 70%)", filter: "blur(36px)", zIndex: 0, pointerEvents: "none" }} />
+    <div
+      className="carousel-wrapper"
+      style={{ position: "relative", width: 500, height: 520, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => { setIsPaused(false); setHoveredIdx(null); }}
+    >
+      {/* Ambient glow behind carousel */}
+      <div style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 420, height: 420, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(229,9,20,0.15) 0%, rgba(178,7,16,0.08) 40%, transparent 70%)",
+        filter: "blur(60px)",
+        animation: "carousel-glow-pulse 4s ease-in-out infinite",
+        pointerEvents: "none", zIndex: 0,
+      }} />
 
-      {/* Parallax tilt */}
-      <div style={{ position: "absolute", inset: 0, transform: `rotateY(${mx * -4}deg) rotateX(${my * 3}deg)`, transformStyle: "preserve-3d", transition: "transform 0.5s cubic-bezier(0.22,1,0.36,1)" }}>
+      {/* 3D Ring */}
+      <div
+        className="carousel-ring"
+        style={{
+          position: "relative",
+          width: cardW, height: cardH,
+          transformStyle: "preserve-3d",
+          transform: `rotateY(${-rotation}deg)`,
+        }}
+      >
+        {movies.map((movie, i) => {
+          const angle = i * angleStep;
+          // Calculate if this card is facing the viewer
+          const cardAngle = ((angle + rotation) % 360 + 360) % 360;
+          const isFront = cardAngle < 60 || cardAngle > 300;
+          const isBack = cardAngle > 120 && cardAngle < 240;
+          const isHovered = hoveredIdx === i;
 
-        {/* Behind cards — same premium style, dimmed */}
-        {behind.map((p, i) => {
-          const c = BACK[i] || BACK[BACK.length - 1];
-          const isHovered = hoveredIdx === i + 1;
-          const isMainHovered = hoveredIdx === 0;
-          const dimmed = isMainHovered ? 0.25 : c.opacity;
           return (
             <div
-              key={`b-${i}`}
-              onClick={() => onSelectMovie(p)}
-              onMouseEnter={() => setHoveredIdx(i + 1)}
+              key={movie.id}
+              className="carousel-card"
+              onClick={() => onSelectMovie(movie)}
+              onMouseEnter={() => setHoveredIdx(i)}
               onMouseLeave={() => setHoveredIdx(null)}
-              style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 400, marginLeft: -150, marginTop: -200, borderRadius: 20, overflow: "hidden", cursor: "pointer", transform: `translate(${c.tx}px, ${c.ty}px) translateZ(${c.tz}px) rotate(${c.rot}deg) scale(${isHovered ? c.scale + 0.08 : c.scale})`, zIndex: isHovered ? 30 : c.z, opacity: dimmed, border: "1px solid rgba(255,255,255,0.1)", boxShadow: isHovered ? "0 44px 90px rgba(0,0,0,0.75), 0 0 70px rgba(229,9,20,0.32), inset 0 0 0 1px rgba(255,255,255,0.08)" : "0 36px 80px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.22), inset 0 0 0 1px rgba(255,255,255,0.06)", background: "#0c0c12", transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease, opacity 0.35s ease" }}
+              style={{
+                position: "absolute",
+                width: cardW, height: cardH,
+                left: 0, top: 0,
+                transform: `rotateY(${angle}deg) translateZ(${radius}px)${isHovered ? " scale(1.12)" : ""}`,
+                boxShadow: isFront
+                  ? "0 30px 70px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.25), inset 0 0 0 1px rgba(255,255,255,0.08)"
+                  : "0 16px 40px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.04)",
+                zIndex: isFront ? 10 : isBack ? 1 : 5,
+              }}
             >
-              <img src={p.img} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.4) 45%, rgba(0,0,0,0.9) 100%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 18px", transform: isHovered ? "translateY(0)" : "translateY(0)", transition: "transform 0.35s ease" }}>
-                <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: isHovered ? 20 : 18, lineHeight: 1.15, letterSpacing: "-0.02em", color: "white", margin: "0 0 6px", transition: "font-size 0.35s ease" }}>{p.title}</h3>
-                <p style={{ fontFamily: "Inter,sans-serif", fontSize: isHovered ? 12 : 11, color: "rgba(255,255,255,0.5)", margin: 0, transition: "font-size 0.35s ease" }}>{p.genre}{p.year ? ` · ${p.year}` : ""}</p>
-                {isHovered && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-                    {typeof p.rating === "number" && p.rating > 0 ? (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 50, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>
-                        <Star size={10} fill="#F59E0B" color="#F59E0B" /> {p.rating.toFixed(1)}
-                      </span>
-                    ) : null}
-                    {typeof p.matchPct === "number" ? (
-                      <span style={{ padding: "3px 8px", borderRadius: 50, background: "rgba(229,9,20,0.18)", color: "#E50914", fontSize: 11, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{p.matchPct}% match</span>
-                    ) : null}
-                  </div>
-                )}
+              <img
+                src={movie.img}
+                alt={movie.title}
+                draggable={false}
+                style={{
+                  width: "100%", height: "100%", objectFit: "cover",
+                  transition: "transform 0.45s ease",
+                  transform: isHovered ? "scale(1.08)" : "scale(1)",
+                }}
+              />
+
+              {/* Dark gradient overlay */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.25) 35%, transparent 60%)",
+              }} />
+
+              {/* Movie info overlay */}
+              <div
+                className="card-overlay"
+                style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0,
+                  padding: "16px 14px 14px",
+                }}
+              >
+                <h3 style={{
+                  fontFamily: "Manrope,sans-serif", fontWeight: 800,
+                  fontSize: isHovered ? 17 : 15, lineHeight: 1.2,
+                  letterSpacing: "-0.02em", color: "white",
+                  margin: "0 0 4px",
+                  transition: "font-size 0.3s ease",
+                  textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+                }}>{movie.title}</h3>
+                <p style={{
+                  fontFamily: "Inter,sans-serif",
+                  fontSize: 11, color: "rgba(255,255,255,0.55)",
+                  margin: "0 0 8px",
+                }}>{movie.genre}{movie.year ? ` · ${movie.year}` : ""}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {typeof movie.rating === "number" && movie.rating > 0 ? (
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 3,
+                      padding: "2px 7px", borderRadius: 50,
+                      background: "rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.85)",
+                      fontSize: 10, fontWeight: 700, fontFamily: "Inter,sans-serif",
+                    }}>
+                      <Star size={9} fill="#F59E0B" color="#F59E0B" /> {movie.rating.toFixed(1)}
+                    </span>
+                  ) : null}
+                  {typeof movie.matchPct === "number" ? (
+                    <span style={{
+                      padding: "2px 7px", borderRadius: 50,
+                      background: "rgba(229,9,20,0.2)",
+                      color: "#E50914", fontSize: 10, fontWeight: 700, fontFamily: "Inter,sans-serif",
+                    }}>{movie.matchPct}% match</span>
+                  ) : null}
+                </div>
               </div>
+
+              {/* Shine effect on hover */}
+              {isHovered && (
+                <div style={{
+                  position: "absolute", inset: 0, borderRadius: 20,
+                  border: "1.5px solid rgba(229,9,20,0.5)",
+                  boxShadow: "inset 0 0 24px rgba(229,9,20,0.15)",
+                  pointerEvents: "none",
+                }} />
+              )}
             </div>
           );
         })}
+      </div>
 
-        {/* Main card (premium postcard) */}
-        <div
-          onClick={() => onSelectMovie(main)}
-          onMouseEnter={() => setHoveredIdx(0)}
-          onMouseLeave={() => setHoveredIdx(null)}
-          style={{
-            position: "absolute", top: "50%", left: "50%", width: 300, height: 400, marginLeft: -150, marginTop: -200,
-            borderRadius: 20, overflow: "hidden", zIndex: 10, cursor: "pointer", background: "#0c0c12",
-            border: "1px solid rgba(255,255,255,0.1)",
-            boxShadow: hoveredIdx === 0 ? "0 50px 100px rgba(0,0,0,0.78), 0 0 80px rgba(229,9,20,0.38), inset 0 0 0 1px rgba(255,255,255,0.1)" : "0 36px 80px rgba(0,0,0,0.7), 0 0 50px rgba(229,9,20,0.22), inset 0 0 0 1px rgba(255,255,255,0.06)",
-            transform: hoveredIdx === 0 ? "translateY(-10px) scale(1.06)" : "translateY(0) scale(1)",
-            transition: "transform 0.45s cubic-bezier(0.22,1,0.36,1), box-shadow 0.45s ease",
-          }}
-        >
-          <img src={main.img} alt={main.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.45s ease", transform: hoveredIdx === 0 ? "scale(1.08)" : "scale(1)" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.88) 100%)" }} />
-
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: hoveredIdx === 0 ? "32px 28px 28px" : "28px 24px 24px", transition: "padding 0.35s ease" }}>
-            <h3 style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: hoveredIdx === 0 ? 28 : 24, lineHeight: 1.15, letterSpacing: "-0.02em", color: "white", margin: "0 0 8px", transition: "font-size 0.35s ease" }}>{main.title}</h3>
-            <p style={{ fontFamily: "Inter,sans-serif", fontSize: hoveredIdx === 0 ? 13 : 12, color: "rgba(255,255,255,0.5)", margin: "0 0 14px", transition: "font-size 0.35s ease" }}>
-              {main.genre}{main.year ? ` · ${main.year}` : ""}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {typeof main.rating === "number" && main.rating > 0 ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 50, background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>
-                  <Star size={12} fill="#F59E0B" color="#F59E0B" /> {main.rating.toFixed(1)}
-                </span>
-              ) : null}
-              {typeof main.matchPct === "number" ? (
-                <span style={{ padding: "4px 10px", borderRadius: 50, background: "rgba(229,9,20,0.18)", color: "#E50914", fontSize: 12, fontWeight: 700, fontFamily: "Inter,sans-serif" }}>{main.matchPct}% match</span>
-              ) : null}
-            </div>
-          </div>
-        </div>
+      {/* Floating label */}
+      <div style={{
+        position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)",
+        padding: "6px 16px", borderRadius: 50,
+        background: "rgba(229,9,20,0.1)",
+        border: "1px solid rgba(229,9,20,0.25)",
+        fontFamily: "Inter,sans-serif", fontSize: 11, fontWeight: 600,
+        color: "rgba(229,9,20,0.7)", letterSpacing: "0.04em",
+        pointerEvents: "none",
+        opacity: isPaused ? 0 : 0.7,
+        transition: "opacity 0.4s ease",
+      }}>
+        🎬 Trending Now
       </div>
     </div>
   );
@@ -542,7 +687,7 @@ function MovieSearchModal({ onClose, onSelectMovie }: { onClose: () => void; onS
   );
 }
 
-function Hero({ mx, my, onStartMatching, onExploreMovies, onSelectMovie }: { mx: number; my: number; onStartMatching: () => void; onExploreMovies: () => void; onSelectMovie: (m: Movie) => void }) {
+function Hero({ onStartMatching, onExploreMovies, onSelectMovie }: { onStartMatching: () => void; onExploreMovies: () => void; onSelectMovie: (m: Movie) => void }) {
   return (
     <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", overflow: "hidden", background: `radial-gradient(ellipse 90% 80% at 68% 50%, rgba(229,9,20,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 60% at 12% 85%, rgba(136,19,55,0.05) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 88% 8%, rgba(229,9,20,0.03) 0%, transparent 45%), #050505` }}>
       {/* Background lights */}
@@ -580,9 +725,9 @@ function Hero({ mx, my, onStartMatching, onExploreMovies, onSelectMovie }: { mx:
             </div>
           </div>
 
-          {/* Right */}
+          {/* Right — 3D Carousel */}
           <div className="reveal d2" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <PosterStack mx={mx} my={my} onSelectMovie={onSelectMovie} />
+            <MovieCarousel3D onSelectMovie={onSelectMovie} />
           </div>
         </div>
       </div>
@@ -828,16 +973,16 @@ function SwipeDemo() {
               <div style={{ position: "relative", width: 340, height: 480 }}>
                 {/* Behind card 2 */}
                 {nextNextMovie && (
-                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(-110px) rotate(-12deg) scale(0.85)", zIndex: 1, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.25)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", opacity: 0.7 }}>
-                    <img src={nextNextMovie.img} alt={nextNextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.8) brightness(0.75)" }} />
+                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(-110px) rotate(-12deg) scale(0.85)", zIndex: 1, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.25)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12" }}>
+                    <img src={nextNextMovie.img} alt={nextNextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(229,9,20,0.2), rgba(178,7,16,0.3))", mixBlendMode: "overlay" }} />
                   </div>
                 )}
 
                 {/* Behind card 1 */}
                 {nextMovie && (
-                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(110px) rotate(12deg) scale(0.85)", zIndex: 2, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.3)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12", opacity: 0.85 }}>
-                    <img src={nextMovie.img} alt={nextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "saturate(0.85) brightness(0.8)" }} />
+                  <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 430, marginLeft: -150, marginTop: -215, borderRadius: 22, overflow: "hidden", transform: "translateX(110px) rotate(12deg) scale(0.85)", zIndex: 2, boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 30px rgba(229,9,20,0.3)", border: "1px solid rgba(255,255,255,0.06)", background: "#0c0c12" }}>
+                    <img src={nextMovie.img} alt={nextMovie.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(229,9,20,0.2), rgba(178,7,16,0.3))", mixBlendMode: "overlay" }} />
                   </div>
                 )}
@@ -863,7 +1008,7 @@ function SwipeDemo() {
                   }}
                 >
                   <img src={movie.img} alt={movie.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.2) 35%, transparent 60%)" }} />
 
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 28px" }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
@@ -1258,6 +1403,8 @@ export default function App() {
   const [showRoomDialog, setShowRoomDialog] = useState(false);
   const [urlRoomId, setUrlRoomId] = useState<string | undefined>(undefined);
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [user, setUser] = useState<{ displayName: string; email: string } | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const { room: activeRoom, leaveRoom } = useRoom();
@@ -1318,8 +1465,8 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: "#050505", color: "#F0EFFA", overflowX: "hidden", fontFamily: "Inter,sans-serif" }}>
       <style>{STYLES}</style>
       <Grain />
-      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} onSeeHowItWorks={handleSeeHowItWorks} />
-      <Hero mx={mouse.x} my={mouse.y} onStartMatching={handleStartMatching} onExploreMovies={handleExploreMovies} onSelectMovie={setDetailMovie} />
+      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} onSeeHowItWorks={handleSeeHowItWorks} onOpenAuth={() => setAuthOpen(true)} user={user} onLogOut={() => setUser(null)} />
+      <Hero onStartMatching={handleStartMatching} onExploreMovies={handleExploreMovies} onSelectMovie={setDetailMovie} />
       <div id="howitworks-section">
         <HowItWorks onStartMatching={handleStartMatching} />
       </div>
@@ -1336,16 +1483,17 @@ export default function App() {
       <Footer />
 
       {showRoomDialog && (
-        <RoomCreationDialog onClose={closeRoomDialog} preloadedRoomId={urlRoomId} />
+        <RoomCreationDialog onClose={closeRoomDialog} preloadedRoomId={urlRoomId} user={user} />
       )}
       {joinOpen && (
-        <RoomCreationDialog onClose={() => setJoinOpen(false)} joinMode />
+        <RoomCreationDialog onClose={() => setJoinOpen(false)} joinMode user={user} />
       )}
       {activeRoom && !showRoomDialog && !joinOpen && (
         <RoomScreen onBack={closeRoomScreen} />
       )}
       <MovieDetailModal movie={detailMovie} onClose={() => setDetailMovie(null)} onStartMatching={handleStartMatching} />
       {searchOpen && <MovieSearchModal onClose={() => setSearchOpen(false)} onSelectMovie={(m) => setDetailMovie(m)} />}
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={(u) => { setUser(u); setAuthOpen(false); }} />}
     </div>
   );
 }

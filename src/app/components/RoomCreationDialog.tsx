@@ -2,14 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { X, ChevronRight, Copy, Check, Link } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 
-export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean }) {
+export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean; user?: { displayName: string; email: string } | null }) {
   const { createRoom, joinRoom, isCreating, error, room, dismissError } = useRoom();
   const [step, setStep] = useState<"form" | "join" | "room">(preloadedRoomId || joinMode ? "join" : "form");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(user?.displayName.trim() || "");
   const [roomName, setRoomName] = useState("");
   const [roomCode, setRoomCode] = useState(preloadedRoomId || "");
   const [copied, setCopied] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const createName = user?.displayName.trim() || name.trim();
 
   useEffect(() => {
     nameInputRef.current?.focus();
@@ -22,8 +23,8 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
   }, [room]);
 
   const handleCreate = async () => {
-    if (!name.trim()) return;
-    await createRoom(name.trim(), roomName.trim() || undefined);
+    if (!createName) return;
+    await createRoom(createName, roomName.trim() || undefined);
   };
 
   const handleJoin = async () => {
@@ -106,25 +107,41 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
             )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
-              <div>
-                <label style={{
-                  fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
-                  color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
-                }}>Your Name</label>
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  placeholder="e.g. Alex"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  style={{
+              {user ? (
+                <div>
+                  <label style={{
+                    fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
+                    color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
+                  }}>Room Host</label>
+                  <div style={{
                     width: "100%", padding: "12px 16px", borderRadius: 12,
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-                    color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, outline: "none",
-                  }}
-                  onKeyDown={e => e.key === "Enter" && handleCreate()}
-                />
-              </div>
+                    background: "rgba(229,9,20,0.07)", border: "1px solid rgba(229,9,20,0.2)",
+                    color: "white", fontFamily: "Inter,sans-serif", fontSize: 15,
+                  }}>
+                    {user.displayName}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label style={{
+                    fontFamily: "Inter,sans-serif", fontSize: 12, fontWeight: 600,
+                    color: "rgba(240,239,250,0.42)", marginBottom: 6, display: "block"
+                  }}>Your Name</label>
+                  <input
+                    ref={nameInputRef}
+                    type="text"
+                    placeholder="e.g. Alex"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    style={{
+                      width: "100%", padding: "12px 16px", borderRadius: 12,
+                      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                      color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, outline: "none",
+                    }}
+                    onKeyDown={e => e.key === "Enter" && handleCreate()}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{
@@ -148,20 +165,20 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode }: { onC
 
             <button
               onClick={handleCreate}
-              disabled={isCreating || !name.trim()}
+              disabled={isCreating || !createName}
               style={{
                 width: "100%", padding: "14px 20px", borderRadius: 50, border: "none",
-                background: !name.trim()
+                background: !createName
                   ? "rgba(229,9,20,0.35)"
                   : "linear-gradient(135deg,#B20710,#E50914)",
                 color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
-                cursor: !name.trim() ? "default" : "pointer",
+                cursor: !createName ? "default" : "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: !name.trim() ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: !createName ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 8px 24px rgba(0,0,0,0.3)",
               }}
               onMouseEnter={e => {
-                if (!name.trim() || isCreating) return;
+                if (!createName || isCreating) return;
                 e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
                 e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.6), 0 12px 36px rgba(0,0,0,0.4)";
               }}
