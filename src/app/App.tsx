@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, Fragment, useCallback } from "react";
-import { Heart, X, ChevronRight, Star, Film, Play, Check, Users, Loader2, Search } from "lucide-react";
+import { Heart, X, ChevronRight, Star, Film, Play, Check, Users, Loader2, Search, LogOut } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 import { RoomCreationDialog } from "@/app/components/RoomCreationDialog";
 import { RoomScreen } from "@/app/components/RoomScreen";
 import { AuthModal } from "@/app/components/AuthModal";
 import { fetchTrendingMovies, fetchMoviesByGenre, searchMovies } from "@/lib/tmdb";
-import type { Movie } from "../../shared/types";
+import { getCurrentUser, logoutUser } from "@/lib/api";
+import type { Movie, User } from "../../shared/types";
 
 // ─────────────────────────────────────────────
 // DATA
@@ -191,7 +192,7 @@ function Grain() {
 // NAVBAR
 // ─────────────────────────────────────────────
 
-function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowItWorks, onOpenAuth, user, onLogOut }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void; onSeeHowItWorks: () => void; onOpenAuth: () => void; user: { displayName: string; email: string } | null; onLogOut: () => void; }) {
+function Navbar({ scrolled, onStartMatching, onOpenSearch, onJoinRoom, onSeeHowItWorks, onOpenAuth, user, onLogOut }: { scrolled: boolean; onStartMatching: () => void; onOpenSearch: () => void; onJoinRoom: () => void; onSeeHowItWorks: () => void; onOpenAuth: () => void; user: { displayName: string; email: string; provider?: string } | null; onLogOut: () => void; }) {
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
@@ -761,7 +762,7 @@ function HowItWorks({ onStartMatching }: { onStartMatching: () => void }) {
         <div className="hiw-flow">
           {steps.map((s, i) => (
             <Fragment key={i}>
-              <div className="hiw-card reveal d${i + 1}" style={{ position: "relative", padding: "34px 28px 30px", borderRadius: 22, background: "linear-gradient(180deg, rgba(20,20,20,0.96), rgba(10,10,10,0.96))", border: "1px solid rgba(255,255,255,0.07)", boxShadow: "0 18px 48px rgba(0,0,0,0.32)", transition: "transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease", cursor: "default" }}
+              <div className={`hiw-card reveal d${i + 1}`} style={{ position: "relative", padding: "34px 28px 30px", borderRadius: 22, background: "linear-gradient(180deg, rgba(20,20,20,0.96), rgba(10,10,10,0.96))", border: "1px solid rgba(255,255,255,0.07)", boxShadow: "0 18px 48px rgba(0,0,0,0.32)", transition: "transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease", cursor: "default" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = `${s.color}55`; e.currentTarget.style.boxShadow = `0 22px 52px rgba(0,0,0,0.38), 0 0 0 1px ${s.color}22`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.boxShadow = "0 18px 48px rgba(0,0,0,0.32)"; }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
@@ -1200,7 +1201,7 @@ function Friends() {
 // PICK YOUR VIBE
 // ─────────────────────────────────────────────
 
-function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
+function VibePicker({ onStartMatching, selectedGenre, onGenreSelect }: { onStartMatching: () => void; selectedGenre: string | null; onGenreSelect: (genre: string) => void }) {
   const VIBES = [
     { emoji: "😂", label: "Comedy" },
     { emoji: "👻", label: "Horror" },
@@ -1209,7 +1210,6 @@ function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
     { emoji: "🧠", label: "Thriller" },
     { emoji: "🚀", label: "Sci-Fi" },
   ];
-  const [selected, setSelected] = useState<string | null>(null);
 
   return (
     <div id="vibe-section" style={{ flex: "1 1 400px", minWidth: 300, padding: "36px 32px", borderRadius: 24, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", textAlign: "center" }}>
@@ -1222,11 +1222,11 @@ function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
 
       <div className="reveal d2" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
         {VIBES.map((v) => {
-          const isSel = selected === v.label;
+          const isSel = selectedGenre === v.label;
           return (
             <button
               key={v.label}
-              onClick={() => setSelected(v.label)}
+              onClick={() => onGenreSelect(v.label)}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, background: "transparent", border: "none", cursor: "pointer", padding: 4 }}
               onMouseEnter={e => { if (!isSel) { const box = e.currentTarget.firstElementChild as HTMLElement; const lbl = e.currentTarget.lastElementChild as HTMLElement; box.style.borderColor = "rgba(229,9,20,0.4)"; box.style.boxShadow = "0 0 18px rgba(229,9,20,0.35)"; lbl.style.color = "#F0EFFA"; } }}
               onMouseLeave={e => { if (!isSel) { const box = e.currentTarget.firstElementChild as HTMLElement; const lbl = e.currentTarget.lastElementChild as HTMLElement; box.style.borderColor = "rgba(255,255,255,0.1)"; box.style.boxShadow = "none"; lbl.style.color = "rgba(240,239,250,0.6)"; } }}
@@ -1242,19 +1242,19 @@ function VibePicker({ onStartMatching }: { onStartMatching: () => void }) {
 
       <button
         onClick={onStartMatching}
-        disabled={!selected}
+        disabled={!selectedGenre}
         style={{
           marginTop: 32, display: "inline-flex", alignItems: "center", gap: 8,
           padding: "13px 26px", borderRadius: 50, border: "none",
-          background: !selected ? "rgba(229,9,20,0.35)" : "linear-gradient(135deg,#B20710,#E50914)",
-          color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: !selected ? "default" : "pointer",
-          boxShadow: !selected ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)",
+          background: !selectedGenre ? "rgba(229,9,20,0.35)" : "linear-gradient(135deg,#B20710,#E50914)",
+          color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700, cursor: !selectedGenre ? "default" : "pointer",
+          boxShadow: !selectedGenre ? "none" : "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)",
           transition: "transform 0.25s, box-shadow 0.25s",
         }}
-        onMouseEnter={e => { if (selected) { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.7), 0 16px 40px rgba(0,0,0,0.4)"; } }}
-        onMouseLeave={e => { if (selected) { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)"; } }}
+        onMouseEnter={e => { if (selectedGenre) { e.currentTarget.style.transform = "translateY(-2px) scale(1.03)"; e.currentTarget.style.boxShadow = "0 0 48px rgba(229,9,20,0.7), 0 16px 40px rgba(0,0,0,0.4)"; } }}
+        onMouseLeave={e => { if (selectedGenre) { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.45), 0 10px 30px rgba(0,0,0,0.3)"; } }}
       >
-        {selected ? `Start with ${selected} →` : "Pick a vibe to start"} <ChevronRight size={16} />
+        {selectedGenre ? `Start with ${selectedGenre} →` : "Pick a vibe to start"} <ChevronRight size={16} />
       </button>
     </div>
   );
@@ -1398,13 +1398,15 @@ function Footer() {
 // ─────────────────────────────────────────────
 
 export default function App() {
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [showRoomDialog, setShowRoomDialog] = useState(false);
   const [urlRoomId, setUrlRoomId] = useState<string | undefined>(undefined);
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
-  const [user, setUser] = useState<{ displayName: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ displayName: string; email: string; provider?: string } | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const { room: activeRoom, leaveRoom } = useRoom();
@@ -1416,6 +1418,24 @@ export default function App() {
       setUrlRoomId(roomId);
       setShowRoomDialog(true);
     }
+    const authStatus = params.get("auth");
+    if (authStatus === "success") {
+      getCurrentUser().then((u) => {
+        if (u) setUser({ displayName: u.displayName, email: u.email });
+      }).catch(() => {});
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (authStatus === "error") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    getCurrentUser().then((u) => {
+      if (u) setUser({ displayName: u.displayName, email: u.email });
+      setUserLoading(false);
+    }).catch(() => {
+      setUserLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -1441,6 +1461,10 @@ export default function App() {
     setShowRoomDialog(true);
   };
 
+  const handleSelectGenre = (genre: string) => {
+    setSelectedGenre(genre);
+  };
+
   const handleExploreMovies = () => {
     document.getElementById("vibe-section")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -1461,11 +1485,24 @@ export default function App() {
     window.history.replaceState({}, "", window.location.pathname);
   };
 
+  const handleLogOut = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // ignore
+    }
+    setUser(null);
+  };
+
+  const handleGoogleAuth = () => {
+    window.location.href = `${import.meta.env.VITE_API_BASE || ""}/api/auth/google`;
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#050505", color: "#F0EFFA", overflowX: "hidden", fontFamily: "Inter,sans-serif" }}>
       <style>{STYLES}</style>
       <Grain />
-      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} onSeeHowItWorks={handleSeeHowItWorks} onOpenAuth={() => setAuthOpen(true)} user={user} onLogOut={() => setUser(null)} />
+      <Navbar scrolled={scrolled} onStartMatching={handleStartMatching} onOpenSearch={() => setSearchOpen(true)} onJoinRoom={() => setJoinOpen(true)} onSeeHowItWorks={handleSeeHowItWorks} onOpenAuth={() => setAuthOpen(true)} user={user} onLogOut={handleLogOut} />
       <Hero onStartMatching={handleStartMatching} onExploreMovies={handleExploreMovies} onSelectMovie={setDetailMovie} />
       <div id="howitworks-section">
         <HowItWorks onStartMatching={handleStartMatching} />
@@ -1475,7 +1512,7 @@ export default function App() {
       <section style={{ padding: "96px 0", position: "relative", background: "#06060A" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(229,9,20,0.28), transparent)" }} />
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px", display: "flex", flexWrap: "wrap", gap: 28, alignItems: "stretch" }}>
-          <VibePicker onStartMatching={handleStartMatching} />
+          <VibePicker onStartMatching={handleStartMatching} selectedGenre={selectedGenre} onGenreSelect={handleSelectGenre} />
           <WhereToWatch />
         </div>
       </section>
@@ -1483,7 +1520,7 @@ export default function App() {
       <Footer />
 
       {showRoomDialog && (
-        <RoomCreationDialog onClose={closeRoomDialog} preloadedRoomId={urlRoomId} user={user} />
+        <RoomCreationDialog onClose={closeRoomDialog} preloadedRoomId={urlRoomId} user={user} genre={selectedGenre || undefined} />
       )}
       {joinOpen && (
         <RoomCreationDialog onClose={() => setJoinOpen(false)} joinMode user={user} />
@@ -1493,7 +1530,7 @@ export default function App() {
       )}
       <MovieDetailModal movie={detailMovie} onClose={() => setDetailMovie(null)} onStartMatching={handleStartMatching} />
       {searchOpen && <MovieSearchModal onClose={() => setSearchOpen(false)} onSelectMovie={(m) => setDetailMovie(m)} />}
-      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={(u) => { setUser(u); setAuthOpen(false); }} />}
+      {authOpen && <AuthModal onClose={() => setAuthOpen(false)} onSuccess={(u) => { setUser(u); setAuthOpen(false); }} onGoogleAuth={handleGoogleAuth} />}
     </div>
   );
 }

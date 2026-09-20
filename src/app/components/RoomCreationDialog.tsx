@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, ChevronRight, Copy, Check, Link } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 
-export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean; user?: { displayName: string; email: string } | null }) {
+export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user, genre }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean; user?: { displayName: string; email: string } | null; genre?: string }) {
   const { createRoom, joinRoom, isCreating, error, room, dismissError } = useRoom();
   const [step, setStep] = useState<"form" | "join" | "room">(preloadedRoomId || joinMode ? "join" : "form");
   const [name, setName] = useState(user?.displayName.trim() || "");
@@ -24,7 +24,7 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user }:
 
   const handleCreate = async () => {
     if (!createName) return;
-    await createRoom(createName, roomName.trim() || undefined);
+    await createRoom(createName, roomName.trim() || undefined, genre);
   };
 
   const handleJoin = async () => {

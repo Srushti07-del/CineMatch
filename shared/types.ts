@@ -1,3 +1,11 @@
+export interface User {
+  id: string;
+  displayName: string;
+  email: string;
+  picture?: string | null;
+  provider: "google" | "password";
+}
+
 export interface Movie {
   id: number | string;
   title: string;

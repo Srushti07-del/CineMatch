@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 
-export function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (user: { displayName: string; email: string }) => void }) {
+type UserPreview = { displayName: string; email: string; provider?: string };
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
+
+export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () => void; onSuccess: (user: UserPreview) => void; onGoogleAuth: () => void }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,13 +44,9 @@ export function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSucce
       }
     }
 
-    // Mock successful authentication
-    console.log(`Executing ${mode} for ${email}`);
-    
-    // For login, we mock a display name if not provided
     const userDisplayName = mode === "signup" ? displayName : email.split("@")[0];
     
-    onSuccess({ displayName: userDisplayName, email });
+    onSuccess({ displayName: userDisplayName, email, provider: "password" });
   };
 
   return (
@@ -250,6 +250,7 @@ export function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSucce
 
         <button
           type="button"
+          onClick={onGoogleAuth}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
             padding: "14px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.12)",
