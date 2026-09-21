@@ -282,7 +282,7 @@ app.get("/api/auth/google/callback", async (req, res) => {
     });
     const claims = ticket.getPayload();
     const profile = await getGoogleProfile(tokens.access_token);
-    const account = findOrCreateGoogleAccount({ ...claims, ...profile });
+    const account = await findOrCreateGoogleAccount({ ...claims, ...profile });
 
     createSession(res, account);
     return redirectAuthStatus(res, "success");

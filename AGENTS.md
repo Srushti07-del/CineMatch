@@ -16,7 +16,7 @@
 VITE_API_BASE=http://localhost:4000
 VITE_SOCKET_URL=http://localhost:4000
 VITE_TMDB_API_KEY=<your-tmdb-key>
-GOOGLE_CLIENT_ID=<your-google-oauth-client-id>
+GOOGLE_CLIENT_ID=<your-google-oauth-client-id> 
 GOOGLE_CLIENT_SECRET=<your-google-oauth-client-secret>
 ```
 
