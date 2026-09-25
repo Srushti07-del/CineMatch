@@ -4,6 +4,7 @@ import { useRoom } from "@/lib/RoomContext";
 import type { Movie } from "../../../shared/types";
 import { ChatPanel } from "./ChatPanel";
 import { WatchScreen } from "./WatchScreen";
+import { RoomLobby } from "./RoomLobby";
 
 function SwipeCard({
   movie,
@@ -55,7 +56,7 @@ function SwipeCard({
 }
 
 export function RoomScreen({ onBack }: { onBack: () => void }) {
-  const { room, swipe, sendMessage, selectGenre, shuffleMovies, messages, isConnected, participantId, participantName, leaveRoom } = useRoom();
+  const { room, swipe, sendMessage, selectGenre, shuffleMovies, messages, isConnected, participantId, participantName, leaveRoom, startRoom } = useRoom();
   const [dir, setDir] = useState<"left" | "right" | null>(null);
   const [matched, setMatched] = useState<Movie | null>(null);
   const [watchMovie, setWatchMovie] = useState<Movie | null>(null);
@@ -90,6 +91,10 @@ export function RoomScreen({ onBack }: { onBack: () => void }) {
   }, [room?.status, room?.matches?.length]);
 
   if (!room) return null;
+
+  if (room.status === "waiting") {
+    return <RoomLobby onStart={startRoom} onBack={onBack} />;
+  }
 
   // Use LOCAL index, not room.currentMovieIndex
   const movie = room.movies?.[localMovieIndex];

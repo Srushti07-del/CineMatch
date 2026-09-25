@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, ChevronRight, Copy, Check, Link } from "lucide-react";
 import { useRoom } from "@/lib/RoomContext";
 
-export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user, genre }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean; user?: { displayName: string; email: string } | null; genre?: string }) {
+export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user, genre }: { onClose: () => void; preloadedRoomId?: string; joinMode?: boolean; user?: { id?: string; displayName: string; email: string } | null; genre?: string }) {
   const { createRoom, joinRoom, isCreating, error, room, dismissError } = useRoom();
   const [step, setStep] = useState<"form" | "join" | "room">(preloadedRoomId || joinMode ? "join" : "form");
   const [name, setName] = useState(user?.displayName.trim() || "");
@@ -24,12 +24,12 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user, g
 
   const handleCreate = async () => {
     if (!createName) return;
-    await createRoom(createName, roomName.trim() || undefined, genre);
+    await createRoom(createName, roomName.trim() || undefined, genre, user?.id);
   };
 
   const handleJoin = async () => {
     if (!name.trim() || !roomCode.trim()) return;
-    await joinRoom(roomCode.trim(), name.trim());
+    await joinRoom(roomCode.trim(), name.trim(), user?.id);
   };
 
   const handleCopyLink = () => {
@@ -253,9 +253,10 @@ export function RoomCreationDialog({ onClose, preloadedRoomId, joinMode, user, g
                   placeholder="e.g. Alex"
                   value={name}
                   onChange={e => setName(e.target.value)}
+                  disabled={!!user}
                   style={{
                     width: "100%", padding: "12px 16px", borderRadius: 12,
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                    background: user ? "rgba(229,9,20,0.07)" : "rgba(255,255,255,0.04)", border: "1px solid rgba(229,9,20,0.2)",
                     color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, outline: "none",
                   }}
                   onKeyDown={e => e.key === "Enter" && handleJoin()}

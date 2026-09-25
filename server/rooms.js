@@ -16,8 +16,8 @@ export class RoomStore {
     }, 60 * 1000);
   }
 
-  createRoom({ name, hostName, genre, movies }) {
-    const hostId = this._genId();
+  createRoom({ name, hostName, genre, movies, hostId: providedHostId }) {
+    const hostId = providedHostId || this._genId();
     const roomId = this._genShortId();
     const room = {
       id: roomId,
@@ -25,7 +25,7 @@ export class RoomStore {
       genre: genre || "Trending",
       hostId,
       participants: [
-        { id: hostId, name: hostName || "Host", joinedAt: new Date().toISOString() },
+        { id: hostId, name: hostName || "Host", joinedAt: new Date().toISOString(), ready: false },
       ],
       movies: movies !== undefined ? movies : [],
       currentMovieIndex: 0,
@@ -45,17 +45,39 @@ export class RoomStore {
     return room;
   }
 
-  addParticipant(roomId, { name }) {
+  addParticipant(roomId, { name, accountId }) {
     const room = this.rooms.get(roomId);
     if (!room) return null;
-    const participantId = this._genId();
+    const participantId = accountId || this._genId();
     room.participants.push({
       id: participantId,
       name: name || `Guest ${participantId.slice(0, 5)}`,
       joinedAt: new Date().toISOString(),
+      ready: false,
     });
     room.updatedAt = new Date().toISOString();
     return { room, participantId };
+  }
+
+  setReady(roomId, participantId, ready) {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+    const participant = room.participants.find(p => p.id === participantId);
+    if (!participant) return null;
+    participant.ready = ready;
+    room.updatedAt = new Date().toISOString();
+    return room;
+  }
+
+  kickParticipant(roomId, participantId, kickedById) {
+    const room = this.rooms.get(roomId);
+    if (!room) return null;
+    room.participants = room.participants.filter(p => p.id !== participantId);
+    room.updatedAt = new Date().toISOString();
+    if (room.participants.length === 0) {
+      this.deleteRoom(roomId, "no participants");
+    }
+    return { room, participantId, kickedById };
   }
 
   removeParticipant(roomId, participantId) {
@@ -72,8 +94,12 @@ export class RoomStore {
   startRoom(roomId) {
     const room = this.rooms.get(roomId);
     if (!room) return null;
+    if (room.participants.length === 0) return null;
+    const readyCount = room.participants.filter(p => p.ready).length;
+    if (readyCount === 0) return null;
     room.status = "started";
     room.updatedAt = new Date().toISOString();
+    room.participants.forEach(p => { p.ready = false; });
     return room;
   }
 

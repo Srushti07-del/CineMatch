@@ -368,8 +368,8 @@ app.post("/api/auth/logout", (req, res) => {
 });
 
 app.post("/api/rooms", async (req, res) => {
-  const { name, hostName } = req.body || {};
-  const room = store.createRoom({ name, hostName });
+  const { name, hostName, hostId } = req.body || {};
+  const room = store.createRoom({ name, hostName, hostId });
   return res.status(201).json({ room });
 });
 
@@ -402,14 +402,16 @@ app.io = io;
 io.on("connection", (socket) => {
   console.log(`[socket] ${socket.id} connected`);
 
-  socket.on("joinRoom", ({ roomId, name }, cb) => {
+  socket.on("joinRoom", ({ roomId, name, accountId }, cb) => {
     const room = store.getRoom(roomId);
     if (!room) {
       cb && cb({ error: "Room not found" });
       return;
     }
 
-    const existing = room.participants.find(p => p.name === (name || "").trim());
+    const existing = accountId
+      ? room.participants.find(p => p.id === accountId)
+      : room.participants.find(p => p.name === (name || "").trim());
     if (existing) {
       socket.join(`room:${roomId}`);
       socket.data.roomId = roomId;
@@ -418,7 +420,7 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const result = store.addParticipant(roomId, { name });
+    const result = store.addParticipant(roomId, { name, accountId });
     if (!result) {
       cb && cb({ error: "Failed to join room" });
       return;
@@ -443,16 +445,60 @@ io.on("connection", (socket) => {
     socket.data.participantId = participantId;
   });
 
+  socket.on("kick", ({ roomId, participantId, kickedById }, cb) => {
+    const room = store.getRoom(roomId);
+    if (!room) {
+      cb && cb({ error: "Room not found" });
+      return;
+    }
+    if (room.hostId !== kickedById) {
+      cb && cb({ error: "Only the host can kick participants" });
+      return;
+    }
+    const result = store.kickParticipant(roomId, participantId, kickedById);
+    if (!result) {
+      cb && cb({ error: "Failed to kick participant" });
+      return;
+    }
+    io.to(`room:${roomId}`).emit("participantKicked", { participantId, kickedById, room: result.room });
+    cb && cb({ room: result.room });
+  });
+
   socket.on("leaveRoom", ({ roomId, participantId }) => {
     store.removeParticipant(roomId, participantId);
     socket.to(`room:${roomId}`).emit("participantLeft", { participantId });
     socket.leave(`room:${roomId}`);
   });
 
-  socket.on("startRoom", ({ roomId }) => {
-    const room = store.startRoom(roomId);
+  socket.on("ready", ({ roomId, participantId, ready }) => {
+    const room = store.setReady(roomId, participantId, ready);
     if (room) {
-      io.to(`room:${roomId}`).emit("roomStarted", { room });
+      const participant = room.participants.find(p => p.id === participantId);
+      if (participant) {
+        io.to(`room:${roomId}`).emit("participantReady", { participantId, ready });
+      }
+    }
+  });
+
+  socket.on("startRoom", ({ roomId }, cb) => {
+    const room = store.getRoom(roomId);
+    if (!room) {
+      cb && cb({ error: "Room not found" });
+      return;
+    }
+    if (room.participants.length === 0) {
+      cb && cb({ error: "Room is empty" });
+      return;
+    }
+    const readyCount = room.participants.filter(p => p.ready).length;
+    if (readyCount === 0) {
+      cb && cb({ error: "No one is ready yet" });
+      return;
+    }
+    const startedRoom = store.startRoom(roomId);
+    if (startedRoom) {
+      io.to(`room:${roomId}`).emit("roomStarted", { room: startedRoom });
+      cb && cb({ room: startedRoom });
     }
   });
 

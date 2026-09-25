@@ -1004,7 +1004,7 @@ export default function App() {
   const [urlRoomId, setUrlRoomId] = useState<string | undefined>(undefined);
   const [detailMovie, setDetailMovie] = useState<Movie | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
-  const [user, setUser] = useState<{ displayName: string; email: string; provider?: string } | null>(null);
+  const [user, setUser] = useState<{ id?: string; displayName: string; email: string; provider?: string } | null>(null);
   const [userLoading, setUserLoading] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -1020,7 +1020,7 @@ export default function App() {
     const authStatus = params.get("auth");
     if (authStatus === "success") {
       getCurrentUser().then((u) => {
-        if (u) setUser({ displayName: u.displayName, email: u.email });
+        if (u) setUser({ id: u.id, displayName: u.displayName, email: u.email });
       }).catch(() => {});
       window.history.replaceState({}, "", window.location.pathname);
     } else if (authStatus === "error") {
@@ -1030,7 +1030,7 @@ export default function App() {
 
   useEffect(() => {
     getCurrentUser().then((u) => {
-      if (u) setUser({ displayName: u.displayName, email: u.email });
+      if (u) setUser({ id: u.id, displayName: u.displayName, email: u.email });
       setUserLoading(false);
     }).catch(() => {
       setUserLoading(false);

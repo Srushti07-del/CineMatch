@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
+import { register, login } from "@/lib/api";
+import type { User } from "../../../shared/types";
 
-type UserPreview = { displayName: string; email: string; provider?: string };
-
-const API_BASE = import.meta.env.VITE_API_BASE || "";
-
-export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () => void; onSuccess: (user: UserPreview) => void; onGoogleAuth: () => void }) {
+export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () => void; onSuccess: (user: User) => void; onGoogleAuth: () => void }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +11,7 @@ export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () =>
   const [displayName, setDisplayName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,7 +24,7 @@ export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () =>
     }
   };
 
-  const handleAction = (e: React.FormEvent) => {
+  const handleAction = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
 
@@ -44,9 +43,25 @@ export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () =>
       }
     }
 
-    const userDisplayName = mode === "signup" ? displayName : email.split("@")[0];
-    
-    onSuccess({ displayName: userDisplayName, email, provider: "password" });
+    setLoading(true);
+    try {
+      const response = mode === "signup"
+        ? await register({ email, password, displayName: displayName.trim() })
+        : await login({ email, password });
+      onSuccess(response.user);
+    } catch (error: any) {
+      if (error?.status === 409) {
+        setErrorMsg("This email is already registered. Try logging in.");
+      } else if (error?.status === 401) {
+        setErrorMsg("Invalid email or password.");
+      } else if (error?.status === 400) {
+        setErrorMsg(error?.message || "Invalid request.");
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -226,19 +241,21 @@ export function AuthModal({ onClose, onSuccess, onGoogleAuth }: { onClose: () =>
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
               padding: "16px", borderRadius: 14, border: "none", marginTop: 8,
-              background: "linear-gradient(135deg,#B20710,#E50914)",
+              background: loading ? "rgba(229,9,20,0.4)" : "linear-gradient(135deg,#B20710,#E50914)",
               color: "white", fontFamily: "Inter,sans-serif", fontSize: 15, fontWeight: 700,
-              cursor: "pointer",
+              cursor: loading ? "wait" : "pointer",
               boxShadow: "0 0 32px rgba(229,9,20,0.4), 0 8px 24px rgba(0,0,0,0.4)",
-              transition: "transform 0.2s, box-shadow 0.2s"
+              transition: "transform 0.2s, box-shadow 0.2s, background 0.2s",
+              opacity: loading ? 0.7 : 1,
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 0 40px rgba(229,9,20,0.5), 0 10px 28px rgba(0,0,0,0.4)"; }}
+            onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 0 40px rgba(229,9,20,0.5), 0 10px 28px rgba(0,0,0,0.4)"; } }}
             onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 0 32px rgba(229,9,20,0.4), 0 8px 24px rgba(0,0,0,0.4)"; }}
           >
-            {mode === "login" ? "Log In" : "Create Account"}
+            {loading ? "Please wait..." : (mode === "login" ? "Log In" : "Create Account")}
           </button>
         </form>
 
